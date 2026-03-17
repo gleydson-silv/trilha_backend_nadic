@@ -1,0 +1,10 @@
+Django>=5.0
+djangorestframework
+djangorestframework-simplejwt
+psycopg2-binary
+bcrypt
+django-ratelimit
+pyotp
+django-allauth
+requests
+cryptography
