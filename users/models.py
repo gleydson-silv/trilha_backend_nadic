@@ -48,6 +48,9 @@ class Customer(models.Model):
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     email = models.EmailField(unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    two_factor_enabled = models.BooleanField(default=False)
+    two_factor_secret = models.CharField(max_length=255, null=True, blank=True)
+
 
 
     
