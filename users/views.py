@@ -8,7 +8,7 @@ from rest_framework.decorators import api_view
 from django_ratelimit.decorators import ratelimit
 from django.contrib.auth import authenticate
 
-api_view(['POST'])
+@api_view(['POST'])
 @ratelimit(key='user', rate='5/m', method='POST')
 def register(request):
     if getattr(request, 'limited', False):
@@ -53,7 +53,6 @@ def login(request):
         "access": str(refresh.access_token),
         "refresh": str(refresh)
         })
-
 
 
 
