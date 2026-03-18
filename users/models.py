@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator,MinValueValidator
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -25,14 +25,15 @@ class UserManager(BaseUserManager):
 class User(AbstractUser):
     username = None
     email = models.EmailField(unique=True)
-    first_name = models.CharField(max_length=50, null=True, blank=True)
-    last_name = models.CharField(max_length=50, null=True, blank=True)
     class Role(models.TextChoices):
         ADMIN = 'admin', 'Admin'
         USER = 'user', 'User'
         CUSTOMER = 'customer', 'Customer'
+        SELLER = 'seller', 'Seller'
 
     role = models.CharField(max_length=10, choices=Role.choices, default=Role.USER)
+    two_factor_enabled = models.BooleanField(default=False)
+    two_factor_secret = models.CharField(max_length=255, null=True,blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     USERNAME_FIELD = 'email'
@@ -42,39 +43,43 @@ class User(AbstractUser):
 
 
 class Customer(models.Model):
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
-    cpf = models.CharField(max_length=14, unique=True, null=True, blank=True, validators=[RegexValidator(regex=r'^\d{3}\.\d{3}\.\d{3}-\d{2}$', message='CPF deve estar no formato XXX.XXX.XXX-XX')])
-    phone_number = models.CharField(max_length=20, null=True, blank=True)
-    email = models.EmailField(unique=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='customer_profile', null=False, blank=False)
+    first_name = models.CharField(max_length=50,null=False,blank=False)
+    last_name = models.CharField(max_length=50,null=False, blank=False)
+    cpf = models.CharField(max_length=14, unique=True, null=False, blank=False, validators=[RegexValidator(regex=r'^\d{3}\.\d{3}\.\d{3}-\d{2}$', message='CPF deve estar no formato XXX.XXX.XXX-XX')])
+    phone_number = models.CharField(max_length=20, null=False, blank=False, validators=[RegexValidator(regex=r'^\d{2}-\d{9}$', message='Telefone deve estar no formato XX-XXXXXXXXX')])
     created_at = models.DateTimeField(auto_now_add=True)
-    two_factor_enabled = models.BooleanField(default=False)
-    two_factor_secret = models.CharField(max_length=255, null=True, blank=True)
 
-
-
-    
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+class Seller(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='seller_profile', null=False, blank= False)
+    company_name = models.CharField(max_length=255,null=False, blank=False)
+    cnpj = models.CharField(max_length=18, unique=True, null=False, blank=False, validators=[RegexValidator(regex=r'^\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}$', message='CNPJ deve estar no formato XX.XXX.XXX/XXXX-XX')])
+    phone_number = models.CharField(max_length=20, null=False, blank=False, validators=[RegexValidator(regex=r'^\d{2}-\d{9}$', message='Telefone deve estar no formato XX-XXXXXXXXX')])
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class Product(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    quantity_in_stock = models.IntegerField()
+    price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
+    quantity_in_stock = models.IntegerField(validators=[MinValueValidator(0)])
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    seller = models.ForeignKey(Seller, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
-    image = models.ImageField(upload_to='product_images/', null=True, blank=True)
+    image = models.CharField(max_length=255, null=True, blank=True)
 
 
 
 class Order(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     order_date = models.DateTimeField(auto_now_add=True)
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     state = models.CharField(max_length=20,choices=[
         ('pending', 'Pending'),
         ('processing', 'Processing'),
@@ -86,15 +91,15 @@ class Order(models.Model):
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    quantity = models.IntegerField()
-    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.IntegerField(validators=[MinValueValidator(1)])
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
 
 
 
 class Payment(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     payment_date = models.DateTimeField(auto_now_add=True)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     payment_method = models.CharField(max_length=20, choices=[
         ('credit_card', 'Credit Card'),
         ('debit_card', 'Debit Card'),
@@ -112,8 +117,8 @@ class FinancialReport(models.Model):
 
 class Address(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='addresses')
-    street = models.CharField(max_length=255)
-    city = models.CharField(max_length=100)
-    state = models.CharField(max_length=100)
-    zip_code = models.CharField(max_length=20)
-    country = models.CharField(max_length=100)
+    street = models.CharField(max_length=255,null=False, blank=False)
+    city = models.CharField(max_length=100, null=False, blank=False)
+    state = models.CharField(max_length=100, null=False, blank=False)
+    zip_code = models.CharField(max_length=20, null=False, blank=False)
+    country = models.CharField(max_length=100, null=False, blank=False)
