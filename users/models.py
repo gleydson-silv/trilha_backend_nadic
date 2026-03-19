@@ -1,6 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.core.validators import RegexValidator,MinValueValidator
+from django.core.validators import MinValueValidator
+from .validators import (
+    cpf_format_validator,
+    cnpj_format_validator,
+    phone_format_validator,
+    validate_cpf,
+    validate_cnpj,
+)
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -46,8 +53,19 @@ class Customer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='customer_profile', null=False, blank=False)
     first_name = models.CharField(max_length=50,null=False,blank=False)
     last_name = models.CharField(max_length=50,null=False, blank=False)
-    cpf = models.CharField(max_length=14, unique=True, null=False, blank=False, validators=[RegexValidator(regex=r'^\d{3}\.\d{3}\.\d{3}-\d{2}$', message='CPF deve estar no formato XXX.XXX.XXX-XX')])
-    phone_number = models.CharField(max_length=20, null=False, blank=False, validators=[RegexValidator(regex=r'^\d{2}-\d{9}$', message='Telefone deve estar no formato XX-XXXXXXXXX')])
+    cpf = models.CharField(
+        max_length=14,
+        unique=True,
+        null=False,
+        blank=False,
+        validators=[cpf_format_validator, validate_cpf],
+    )
+    phone_number = models.CharField(
+        max_length=20,
+        null=False,
+        blank=False,
+        validators=[phone_format_validator],
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -59,8 +77,19 @@ class Category(models.Model):
 class Seller(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='seller_profile', null=False, blank= False)
     company_name = models.CharField(max_length=255,null=False, blank=False)
-    cnpj = models.CharField(max_length=18, unique=True, null=False, blank=False, validators=[RegexValidator(regex=r'^\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}$', message='CNPJ deve estar no formato XX.XXX.XXX/XXXX-XX')])
-    phone_number = models.CharField(max_length=20, null=False, blank=False, validators=[RegexValidator(regex=r'^\d{2}-\d{9}$', message='Telefone deve estar no formato XX-XXXXXXXXX')])
+    cnpj = models.CharField(
+        max_length=18,
+        unique=True,
+        null=False,
+        blank=False,
+        validators=[cnpj_format_validator, validate_cnpj],
+    )
+    phone_number = models.CharField(
+        max_length=20,
+        null=False,
+        blank=False,
+        validators=[phone_format_validator],
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -118,6 +147,7 @@ class FinancialReport(models.Model):
 class Address(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='addresses')
     street = models.CharField(max_length=255,null=False, blank=False)
+    number = models.IntegerField(null=False, blank=False)
     city = models.CharField(max_length=100, null=False, blank=False)
     state = models.CharField(max_length=100, null=False, blank=False)
     zip_code = models.CharField(max_length=20, null=False, blank=False)
