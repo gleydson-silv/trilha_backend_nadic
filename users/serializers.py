@@ -4,23 +4,12 @@ from .models import User, Customer, Seller
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    cpf = serializers.CharField(required=False, allow_null=True, allow_blank=True)
-    phone_number = serializers.CharField(required=False, allow_null=True, allow_blank=True)
-    company_name = serializers.CharField(required=False, allow_null=True, allow_blank=True)
-    cnpj = serializers.CharField(required=False, allow_null=True, allow_blank=True)
-
     class Meta:
         model = User
         fields = [
             'email',
             'password',
             'role',
-            'first_name',
-            'last_name',
-            'cpf',
-            'phone_number',
-            'company_name',
-            'cnpj',
         ]
 
         extra_kwargs = {
@@ -29,40 +18,14 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         password = validated_data.pop("password")
-        cpf = validated_data.pop("cpf", None)
-        phone_number = validated_data.pop("phone_number", None)
-        company_name = validated_data.pop("company_name", None)
-        cnpj = validated_data.pop("cnpj", None)
 
-        role = validated_data.get("role", User.Role.USER)
-        with transaction.atomic():
-            email = validated_data.get("email")
-            if email:
-                validated_data["email"] = User.objects.normalize_email(email)
-            user = User(**validated_data)
-            user.set_password(password)
-            user.full_clean()
-            user.save()
-
-            if role == User.Role.CUSTOMER:
-                customer = Customer(
-                    user=user,
-                    first_name=user.first_name,
-                    last_name=user.last_name,
-                    cpf=cpf,
-                    phone_number=phone_number,
-                )
-                customer.full_clean()
-                customer.save()
-            elif role == User.Role.SELLER:
-                seller = Seller(
-                    user=user,
-                    company_name=company_name,
-                    cnpj=cnpj,
-                    phone_number=phone_number,
-                )
-                seller.full_clean()
-                seller.save()
+        email = validated_data.get("email")
+        if email:
+            validated_data["email"] = User.objects.normalize_email(email)
+        user = User(**validated_data)
+        user.set_password(password)
+        user.full_clean()
+        user.save()
 
         return user
 
@@ -70,27 +33,98 @@ class RegisterSerializer(serializers.ModelSerializer):
         role = attrs.get("role", User.Role.USER)
         if role == User.Role.ADMIN:
             raise serializers.ValidationError("Role admin não é permitido no registro.")
-        if role == User.Role.CUSTOMER:
-            if not attrs.get("first_name") or not attrs.get("last_name"):
-                raise serializers.ValidationError(
-                    "Para cliente, informe first_name e last_name."
-                )
-            if not attrs.get("cpf") or not attrs.get("phone_number"):
-                raise serializers.ValidationError(
-                    "Para cliente, informe cpf e phone_number."
-                )
-        if role == User.Role.SELLER:
-            if not attrs.get("company_name") or not attrs.get("cnpj"):
-                raise serializers.ValidationError(
-                    "Para vendedor, informe company_name e cnpj."
-                )
-            if not attrs.get("phone_number"):
-                raise serializers.ValidationError(
-                    "Para vendedor, informe phone_number."
-                )
         return attrs
         
-    
+
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()
+
+
+class ProfileCompletionSerializer(serializers.Serializer):
+    first_name = serializers.CharField(required=False, allow_blank=True)
+    last_name = serializers.CharField(required=False, allow_blank=True)
+    phone_number = serializers.CharField(required=False, allow_blank=True)
+    cpf = serializers.CharField(required=False, allow_blank=True)
+    company_name = serializers.CharField(required=False, allow_blank=True)
+    cnpj = serializers.CharField(required=False, allow_blank=True)
+
+    def validate(self, attrs):
+        user = self.context["request"].user
+        role = user.role
+
+        if role == User.Role.CUSTOMER:
+            customer = Customer.objects.filter(user=user).first()
+            required = ["first_name", "last_name", "cpf", "phone_number"]
+            missing = []
+            for field in required:
+                if field in attrs and attrs.get(field):
+                    continue
+                current = None
+                if field in ("first_name", "last_name"):
+                    current = getattr(user, field, None)
+                elif customer:
+                    current = getattr(customer, field, None)
+                if not current:
+                    missing.append(field)
+            if missing:
+                raise serializers.ValidationError(
+                    f"Para cliente, informe: {', '.join(missing)}."
+                )
+
+        if role == User.Role.SELLER:
+            seller = Seller.objects.filter(user=user).first()
+            required = ["first_name", "last_name", "company_name", "cnpj", "phone_number"]
+            missing = []
+            for field in required:
+                if field in attrs and attrs.get(field):
+                    continue
+                current = None
+                if field in ("first_name", "last_name"):
+                    current = getattr(user, field, None)
+                elif seller:
+                    current = getattr(seller, field, None)
+                if not current:
+                    missing.append(field)
+            if missing:
+                raise serializers.ValidationError(
+                    f"Para vendedor, informe: {', '.join(missing)}."
+                )
+
+        return attrs
+
+    def save(self, **kwargs):
+        user = self.context["request"].user
+        data = self.validated_data
+
+        with transaction.atomic():
+            if "first_name" in data:
+                user.first_name = data.get("first_name", "")
+            if "last_name" in data:
+                user.last_name = data.get("last_name", "")
+            user.full_clean()
+            user.save()
+
+            if user.role == User.Role.CUSTOMER:
+                customer, _created = Customer.objects.get_or_create(user=user)
+                customer.first_name = user.first_name
+                customer.last_name = user.last_name
+                if "cpf" in data:
+                    customer.cpf = data.get("cpf", customer.cpf)
+                if "phone_number" in data:
+                    customer.phone_number = data.get("phone_number", customer.phone_number)
+                customer.full_clean()
+                customer.save()
+
+            if user.role == User.Role.SELLER:
+                seller, _created = Seller.objects.get_or_create(user=user)
+                if "company_name" in data:
+                    seller.company_name = data.get("company_name", seller.company_name)
+                if "cnpj" in data:
+                    seller.cnpj = data.get("cnpj", seller.cnpj)
+                if "phone_number" in data:
+                    seller.phone_number = data.get("phone_number", seller.phone_number)
+                seller.full_clean()
+                seller.save()
+
+        return user        
