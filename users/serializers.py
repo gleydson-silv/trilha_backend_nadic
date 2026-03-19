@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 from .models import User, Customer, Seller
 
@@ -24,7 +25,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             validated_data["email"] = User.objects.normalize_email(email)
         user = User(**validated_data)
         user.set_password(password)
-        user.full_clean()
+        ###user.full_clean()
         user.save()
 
         return user
@@ -55,6 +56,11 @@ class ProfileCompletionSerializer(serializers.Serializer):
 
         if role == User.Role.CUSTOMER:
             customer = Customer.objects.filter(user=user).first()
+            cpf = attrs.get("cpf")
+            if cpf:
+                qs = Customer.objects.exclude(user=user).filter(cpf=cpf)
+                if qs.exists():
+                    raise serializers.ValidationError({"cpf": "CPF já está em uso."})
             required = ["first_name", "last_name", "cpf", "phone_number"]
             missing = []
             for field in required:
@@ -74,6 +80,11 @@ class ProfileCompletionSerializer(serializers.Serializer):
 
         if role == User.Role.SELLER:
             seller = Seller.objects.filter(user=user).first()
+            cnpj = attrs.get("cnpj")
+            if cnpj:
+                qs = Seller.objects.exclude(user=user).filter(cnpj=cnpj)
+                if qs.exists():
+                    raise serializers.ValidationError({"cnpj": "CNPJ já está em uso."})
             required = ["first_name", "last_name", "company_name", "cnpj", "phone_number"]
             missing = []
             for field in required:
@@ -102,7 +113,7 @@ class ProfileCompletionSerializer(serializers.Serializer):
                 user.first_name = data.get("first_name", "")
             if "last_name" in data:
                 user.last_name = data.get("last_name", "")
-            user.full_clean()
+            ###user.full_clean()
             user.save()
 
             if user.role == User.Role.CUSTOMER:
@@ -113,7 +124,10 @@ class ProfileCompletionSerializer(serializers.Serializer):
                     customer.cpf = data.get("cpf", customer.cpf)
                 if "phone_number" in data:
                     customer.phone_number = data.get("phone_number", customer.phone_number)
-                customer.full_clean()
+                try:
+                    customer.full_clean()
+                except DjangoValidationError as e:
+                    raise serializers.ValidationError(e.message_dict)
                 customer.save()
 
             if user.role == User.Role.SELLER:
@@ -124,7 +138,10 @@ class ProfileCompletionSerializer(serializers.Serializer):
                     seller.cnpj = data.get("cnpj", seller.cnpj)
                 if "phone_number" in data:
                     seller.phone_number = data.get("phone_number", seller.phone_number)
-                seller.full_clean()
+                try:
+                    seller.full_clean()
+                except DjangoValidationError as e:
+                    raise serializers.ValidationError(e.message_dict)
                 seller.save()
 
         return user        
