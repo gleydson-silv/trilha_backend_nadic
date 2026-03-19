@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import serializers
 from .models import User, Customer, Seller
 
@@ -34,23 +35,34 @@ class RegisterSerializer(serializers.ModelSerializer):
         cnpj = validated_data.pop("cnpj", None)
 
         role = validated_data.get("role", User.Role.USER)
-        user = User.objects.create_user(password=password, **validated_data)
+        with transaction.atomic():
+            email = validated_data.get("email")
+            if email:
+                validated_data["email"] = User.objects.normalize_email(email)
+            user = User(**validated_data)
+            user.set_password(password)
+            user.full_clean()
+            user.save()
 
-        if role == User.Role.CUSTOMER:
-            Customer.objects.create(
-                user=user,
-                first_name=user.first_name,
-                last_name=user.last_name,
-                cpf=cpf,
-                phone_number=phone_number,
-            )
-        elif role == User.Role.SELLER:
-            Seller.objects.create(
-                user=user,
-                company_name=company_name,
-                cnpj=cnpj,
-                phone_number=phone_number,
-            )
+            if role == User.Role.CUSTOMER:
+                customer = Customer(
+                    user=user,
+                    first_name=user.first_name,
+                    last_name=user.last_name,
+                    cpf=cpf,
+                    phone_number=phone_number,
+                )
+                customer.full_clean()
+                customer.save()
+            elif role == User.Role.SELLER:
+                seller = Seller(
+                    user=user,
+                    company_name=company_name,
+                    cnpj=cnpj,
+                    phone_number=phone_number,
+                )
+                seller.full_clean()
+                seller.save()
 
         return user
 
