@@ -69,8 +69,9 @@ def complete_profile(request):
     serializer = ProfileCompletionSerializer(
         data=request.data,
         context={"request": request},
+        partial=True
     )
-    if serializer.is_valid(partial=True):
+    if serializer.is_valid():
         serializer.save()
         return Response(
             {"message": "Perfil atualizado com sucesso."},

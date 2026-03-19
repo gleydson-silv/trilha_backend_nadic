@@ -147,7 +147,7 @@ class FinancialReport(models.Model):
 class Address(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='addresses')
     street = models.CharField(max_length=255,null=False, blank=False)
-    number = models.IntegerField(null=False, blank=False)
+    number = models.CharField(max_length=10,default="s/n")
     city = models.CharField(max_length=100, null=False, blank=False)
     state = models.CharField(max_length=100, null=False, blank=False)
     zip_code = models.CharField(max_length=20, null=False, blank=False)
