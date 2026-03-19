@@ -1,12 +1,13 @@
 from django.shortcuts import render
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from .serializers import RegisterSerializer, LoginSerializer
+from .serializers import RegisterSerializer, LoginSerializer, ProfileCompletionSerializer
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import api_view
 from django_ratelimit.decorators import ratelimit
 from django.contrib.auth import authenticate
+from rest_framework.permissions import IsAuthenticated
 
 @api_view(['POST'])
 @ratelimit(key='user', rate='5/m', method='POST')
@@ -55,4 +56,25 @@ def login(request):
         })
 
 
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+@ratelimit(key='user', rate='5/m', method='PATCH')
+def complete_profile(request):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite máximo de requisições atingido."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
+
+    serializer = ProfileCompletionSerializer(
+        data=request.data,
+        context={"request": request},
+    )
+    if serializer.is_valid(partial=True):
+        serializer.save()
+        return Response(
+            {"message": "Perfil atualizado com sucesso."},
+            status=status.HTTP_200_OK
+        )
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
