@@ -238,4 +238,59 @@ def profile(request):
     
     return Response({ 'error': "Perfil não encontrado"}, status = status.HTTP_404_NOT_FOUND)
 
-   
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+@ratelimit(key='user', rate='5/m', method='PUT')
+def update_profile(request):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite máximo de requisições atingido."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
+    
+    user = request.user
+    data = request.data
+
+    if user.role == 'seller':
+        user.cnpj = data.get('cnpj', user.cnpj)
+        user.company_name = data.get('company_name', user.company_name)
+        user.phone_number = data.get('phone_number', user.phone_number)
+        user.first_name = data.get('first_name', user.first_name)
+        user.last_name  = data.get('last_name', user.last_name)
+        user.email = data.get('email', user.email)
+        user.save()
+        return Response({
+            'name': user.first_name + " " + user.last_name,
+            'email': user.email,
+            'cnpj': user.cnpj,
+            'company_name': user.company_name,
+            'phone_number': user.phone_number,
+        })
+    if user.role == 'customer':
+        user.phone_number = data.get('phone_number', user.phone_number)
+        user.first_name = data.get('first_name', user.first_name)
+        user.last_name  = data.get('last_name', user.last_name)
+        user.email = data.get('email', user.email)
+        user.save()
+        return Response({
+            'name': user.first_name + " " + user.last_name,
+            'email': user.email,
+            'cpf': user.cpf,
+            'phone_number': user.phone_number,
+        })
+    if user.role == 'admin':
+        user.first_name = data.get('first_name', user.first_name)
+        user.last_name  = data.get('last_name', user.last_name)
+        user.email = data.get('email', user.email)
+        user.save()
+        return Response({
+            'name': user.first_name + " " + user.last_name,
+            'email': user.email,
+        })
+
+
+
+    return Response({
+        'error': "Perfil não encontrado"
+    }, status=status.HTTP_404_NOT_FOUND)
