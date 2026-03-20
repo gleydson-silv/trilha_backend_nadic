@@ -199,3 +199,43 @@ def change_password(request):
     user.save()
 
     return Response({'message': "Senha alterada com sucesso"}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@ratelimit(key='user', rate='60/m', method='GET')
+def profile(request):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite máximo de requisições atingido."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
+    
+    user = request.user
+    if user.role == 'seller':
+        return Response({
+            'name': user.first_name + " " + user.last_name,
+            'email': user.email,
+            'cnpj': user.cnpj,
+            'company_name': user.company_name,
+            'phone_number': user.phone_number,
+        })
+    
+    if user.role == 'customer':
+        return Response({
+            'name': user.first_name + " " + user.last_name,
+            'email': user.email,
+            'cpf': user.cpf,
+            'phone_number': user.phone_number,
+            
+        })
+    
+    if user.role == 'admin':
+        return Response({
+            'name': user.first_name + " " + user.last_name,
+            'email': user.email,
+        })
+    
+    return Response({ 'error': "Perfil não encontrado"}, status = status.HTTP_404_NOT_FOUND)
+
+   
