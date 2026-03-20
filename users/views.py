@@ -8,6 +8,11 @@ from django_ratelimit.decorators import ratelimit
 from django.contrib.auth import authenticate
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from .models import User
+from django.core.mail import send_mail
+from django.conf import settings
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
 
 @api_view(['POST'])
 @ratelimit(key='user', rate='5/m', method='POST')
@@ -99,3 +104,34 @@ def logout(request):
         return Response({"error": "Token inválido ou já expirado."}, status=status.HTTP_400_BAD_REQUEST)
     
 token_generator = PasswordResetTokenGenerator()
+
+
+@api_view(["POST"])
+@ratelimit(key='user', rate = '5/m', method='POST')
+def forgot_password(request):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite máximo de requisições atingido."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
+    
+    email = request.data.get("email")
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return Response({"error": "Usuário não encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+    token = token_generator.make_token(user)
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+    reset_link = f"http://localhost:3000/reset-password/{uid}/{token}/"
+
+    send_mail(
+        "Redefinir senha",
+        f"Clique no link para redefinir sua senha: {reset_link}",
+        settings.DEFAULT_FROM_EMAIL,
+        [email],
+        fail_silently=False,
+    )
+
+    return Response({"message": "Email de recuperação enviado"})
