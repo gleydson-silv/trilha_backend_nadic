@@ -12,6 +12,7 @@ from .models import User
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.http import urlsafe_base64_encode
+from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 
 @api_view(['POST'])
@@ -135,3 +136,31 @@ def forgot_password(request):
     )
 
     return Response({"message": "Email de recuperação enviado"})
+
+
+@api_view(['POST'])
+@ratelimit(key='user', rate='5/m', method='POST')
+def reset_password(request,uidb64, token):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite máximo de requisições atingido."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
+    
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk = uid)
+    except (User.DoesNotExist, ValueError, TypeError):
+        return Response({'error': "Usuario não encontrado"}, status = status.HTTP_404_NOT_FOUND)
+    
+    if not token_generator.check_token(user, token):
+        return Response({'error': "Token invalido ou expirado"}, status = status.HTTP_400_BAD_REQUEST)
+    
+    new_password = request.data.get('password')
+    if not new_password:
+        return Response({'error': "A nova senha é obrigatoria"}, status = status.HTTP_400_BAD_REQUEST)
+    
+    user.set_password(new_password)
+    user.save()
+    
+    return Response({'message': "Senha alterada com sucesso"}, status=status.HTTP_200_OK)
