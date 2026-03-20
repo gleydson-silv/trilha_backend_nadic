@@ -4,10 +4,10 @@ from rest_framework.response import Response
 from .serializers import RegisterSerializer, LoginSerializer, ProfileCompletionSerializer
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.decorators import api_view
 from django_ratelimit.decorators import ratelimit
 from django.contrib.auth import authenticate
 from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 
 @api_view(['POST'])
 @ratelimit(key='user', rate='5/m', method='POST')
@@ -79,3 +79,23 @@ def complete_profile(request):
         )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@ratelimit(key='user', rate='5/m', method='POST')
+def logout(request):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite máximo de requisições atingido."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
+    
+    try:
+        refresh_token = request.data["refresh"]
+        token = RefreshToken(refresh_token)
+        token.blacklist()
+        return Response({"message": "Logout realizado com sucesso."}, status=status.HTTP_205_RESET_CONTENT)
+    except Exception as e:
+        return Response({"error": "Token inválido ou já expirado."}, status=status.HTTP_400_BAD_REQUEST)
+    
+token_generator = PasswordResetTokenGenerator()
