@@ -483,3 +483,25 @@ def verify_2fa(request):
         "refresh": str(refresh)
     })
 
+
+@api_view(['POST'])
+@ratelimit(key='user', rate='5/m', method='POST')
+@permission_classes([IsAuthenticated])
+def enable_2fa(request):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite máximo de requisições atingido."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
+    
+    user = request.user
+
+    if user.two_factor_enabled:
+        return Response({"error": "2FA já está habilitado"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    secret = pyotp.random_base32()
+    user.two_factor_secret = secret
+    user.two_factor_enabled = True
+    user.save()
+
+    return Response({"message": "2FA habilitado com sucesso", "secret": secret}, status=status.HTTP_200_OK)

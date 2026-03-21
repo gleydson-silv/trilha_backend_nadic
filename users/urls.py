@@ -16,4 +16,5 @@ urlpatterns = [
     path('cep/<str:cep>/', views.consultar_cep, name='consultar_cep'),
     path('account/delete/', views.delete_account, name='delete_account'),
     path('account/2fa/verify/', views.verify_2fa, name='verify_2fa'),
+    path('account/2fa/enable/', views.enable_2fa, name='enable_2fa'),
 ]
