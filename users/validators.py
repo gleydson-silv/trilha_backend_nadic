@@ -61,3 +61,15 @@ def validate_cnpj(value: str) -> None:
     check_2 = 0 if mod < 2 else 11 - mod
     if check_2 != int(digits[13]):
         raise ValidationError("CNPJ inválido")
+    
+
+def validate_cep(value: str) -> None:
+    raw = (value or "").strip()
+    if raw and not all(ch.isdigit() or ch == "-" for ch in raw):
+        raise ValidationError("CEP deve conter apenas números e hífen")
+
+    cep = _only_digits(raw)
+    if len(cep) != 8:
+        raise ValidationError("CEP deve conter 8 dígitos")
+    if cep == cep[0] * 8:
+        raise ValidationError("CEP inválido")
