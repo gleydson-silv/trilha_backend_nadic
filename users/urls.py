@@ -12,5 +12,6 @@ urlpatterns = [
     path('profile/update/', views.update_profile, name='update_profile'),
     path('profile/update/partial/', views.update_profile_partial, name='partial_update_profile'),
     path('profile/complete/', views.complete_profile, name='complete_profile'),
+    path('profile/address/', views.register_address, name='register_address'),
     path('cep/<str:cep>/', views.consultar_cep, name='consultar_cep'),
 ]

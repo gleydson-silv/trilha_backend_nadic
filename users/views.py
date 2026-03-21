@@ -399,3 +399,41 @@ def consultar_cep(request, cep):
             {"error": "Erro de conexão com o serviço de CEP"},
             status=status.HTTP_503_SERVICE_UNAVAILABLE
         )
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@ratelimit(key='user', rate='5/m', method='POST')
+def register_address(request):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite máximo de requisições atingido."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
+    
+    user = request.user
+    data = request.data
+
+    address = Address.objects.create(
+        user=user,
+        zip_code=data.get('zip_code'),
+        street=data.get('street'),
+        number=data.get('number'),
+        complement=data.get('complement'),
+        neighborhood=data.get('neighborhood'),
+        city=data.get('city'),
+        state=data.get('state')
+    )
+
+    return Response({
+        'message': "Endereço registrado com sucesso",
+        'address': {
+            'zip_code': address.zip_code,
+            'street': address.street,
+            'number': address.number,
+            'complement': address.complement,
+            'neighborhood': address.neighborhood,
+            'city': address.city,
+            'state': address.state
+        }
+    }, status=status.HTTP_201_CREATED)
