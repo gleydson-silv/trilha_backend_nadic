@@ -437,3 +437,19 @@ def register_address(request):
             'state': address.state
         }
     }, status=status.HTTP_201_CREATED)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+@ratelimit(key='user', rate='5/m', method='DELETE')
+def delete_account(request):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite máximo de requisições atingido."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
+    
+    user = request.user
+    user.delete()
+    return Response({"message": "Conta deletada com sucesso"}, status=status.HTTP_200_OK)
+
