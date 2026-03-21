@@ -15,9 +15,11 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.password_validation import validate_password
+import requests
+
 
 @api_view(['POST'])
-@ratelimit(key='user', rate='5/m', method='POST')
+@ratelimit(key='ip', rate='5/m', method='POST')
 def register(request):
     if getattr(request, 'limited', False):
         return Response(
@@ -33,7 +35,7 @@ def register(request):
 
 
 @api_view(['POST'])
-@ratelimit(key='user', rate='5/m', method='POST')
+@ratelimit(key='ip', rate='5/m', method='POST')
 def login(request):
     if getattr(request, 'limited', False):
         return Response(
@@ -351,3 +353,47 @@ def update_profile_partial(request):
     return Response({
         'error': "Perfil não encontrado"
     }, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@ratelimit(key='user', rate='60/m', method='GET')
+def consultar_cep(request, cep):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite máximo de requisições atingido."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
+
+    try:
+        url = f"https://viacep.com.br/ws/{cep}/json/"
+        response = requests.get(url, timeout=5)
+
+        if response.status_code != 200:
+            return Response(
+                {"error": "Erro ao consultar serviço de CEP"},
+                status=status.HTTP_502_BAD_GATEWAY
+            )
+
+        data = response.json()
+
+        
+        if "erro" in data:
+            return Response(
+                {"error": "CEP inválido ou não encontrado"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        return Response(data, status=status.HTTP_200_OK)
+
+    except requests.exceptions.Timeout:
+        return Response(
+            {"error": "Timeout ao consultar CEP"},
+            status=status.HTTP_504_GATEWAY_TIMEOUT
+        )
+
+    except requests.exceptions.RequestException:
+        return Response(
+            {"error": "Erro de conexão com o serviço de CEP"},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE
+        )
