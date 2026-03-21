@@ -17,4 +17,5 @@ urlpatterns = [
     path('account/delete/', views.delete_account, name='delete_account'),
     path('account/2fa/verify/', views.verify_2fa, name='verify_2fa'),
     path('account/2fa/enable/', views.enable_2fa, name='enable_2fa'),
+    path('account/2fa/disable/', views.disable_2fa, name='disable_2fa'),
 ]

@@ -505,3 +505,24 @@ def enable_2fa(request):
     user.save()
 
     return Response({"message": "2FA habilitado com sucesso", "secret": secret}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@ratelimit(key='user', rate='5/m', method='POST')
+@permission_classes([IsAuthenticated])
+def disable_2fa(request):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite máximo de requisições atingido."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
+    
+    user = request.user
+
+    if not user.two_factor_enabled:
+        return Response({"error": "2FA já está desabilitado"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    user.two_factor_secret = ""
+    user.two_factor_enabled = False
+    user.save()
+    return Response({"message": "2FA desabilitado com sucesso"}, status=status.HTTP_200_OK)
