@@ -150,5 +150,5 @@ class Address(models.Model):
     number = models.CharField(max_length=10,default="s/n")
     city = models.CharField(max_length=100, null=False, blank=False)
     state = models.CharField(max_length=100, null=False, blank=False)
-    zip_code = models.CharField(max_length=20, null=False, blank=False)
+    zip_code = models.CharField(max_length=8, null=False, blank=False)
     country = models.CharField(max_length=100, null=False, blank=False)

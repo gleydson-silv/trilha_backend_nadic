@@ -16,6 +16,7 @@ from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.password_validation import validate_password
 import requests
+from .models import Address
 
 
 @api_view(['POST'])
@@ -383,7 +384,8 @@ def consultar_cep(request, cep):
                 {"error": "CEP inválido ou não encontrado"},
                 status=status.HTTP_404_NOT_FOUND
             )
-
+        Address.zip_code = cep
+        Address.save()
         return Response(data, status=status.HTTP_200_OK)
 
     except requests.exceptions.Timeout:
