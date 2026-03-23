@@ -619,3 +619,22 @@ def product_detail_update_delete(request, product_id):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+@ratelimit(key="user", rate="60/m", method="GET")
+def product_details_with_stock(request, product_id):
+    if getattr(request, "limited", False):
+        return Response(
+            {"error": "Limite máximo de requisições atingido."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS,
+        )
+
+    try:
+        product = Product.objects.get(pk=product_id)
+    except Product.DoesNotExist:
+        return Response({"error": "Produto não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = ProductDetailSerializer(product)
+    return Response(serializer.data, status=status.HTTP_200_OK)
