@@ -697,3 +697,40 @@ def categories_list_create(request):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET", "PUT", "PATCH", "DELETE"])
+@permission_classes([CategoryAccessPermission])
+@ratelimit(key="user", rate="60/m", method="GET")
+@ratelimit(key="user", rate="10/m", method="PUT")
+@ratelimit(key="user", rate="10/m", method="PATCH")
+@ratelimit(key="user", rate="10/m", method="DELETE")
+def category_detail_update_delete(request, category_id):
+    if getattr(request, "limited", False):
+        return Response(
+            {"error": "Limite máximo de requisições atingido."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS,
+        )
+
+    try:
+        category = Category.objects.get(pk=category_id)
+    except Category.DoesNotExist:
+        return Response({"error": "Categoria não encontrada."}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == "GET":
+        serializer = CategorySerializer(category)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    if request.method == "DELETE":
+        category.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    serializer = CategorySerializer(
+        category,
+        data=request.data,
+        partial=(request.method == "PATCH"),
+    )
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
