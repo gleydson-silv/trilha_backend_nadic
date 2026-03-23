@@ -7,15 +7,19 @@ from .serializers import (
     ProfileCompletionSerializer,
     ProductSerializer,
     ProductDetailSerializer,
+    CategorySerializer,
 )
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from django_ratelimit.decorators import ratelimit
 from django.contrib.auth import authenticate
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.pagination import PageNumberPagination
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from .models import User, Product, OrderItem
+from .models import User, Product, OrderItem, Category
 from django.db.models import Sum, F, DecimalField, ExpressionWrapper
+from decimal import Decimal, InvalidOperation
+from .permissions import IsSeller, ProductAccessPermission, CategoryAccessPermission
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.http import urlsafe_base64_encode
@@ -509,8 +513,14 @@ def _is_seller(user):
     return user.is_authenticated and user.role == User.Role.SELLER
 
 
+class ProductPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = "page_size"
+    max_page_size = 100
+
+
 @api_view(["GET", "POST"])
-@permission_classes([IsAuthenticated])
+@permission_classes([ProductAccessPermission])
 @ratelimit(key="user", rate="60/m", method="GET")
 @ratelimit(key="user", rate="10/m", method="POST")
 def products_list_create(request):
@@ -525,8 +535,42 @@ def products_list_create(request):
             queryset = Product.objects.filter(seller=request.user.seller_profile)
         else:
             queryset = Product.objects.all()
-        serializer = ProductSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+
+        category_id = request.query_params.get("category")
+        min_price = request.query_params.get("min_price")
+        max_price = request.query_params.get("max_price")
+        in_stock = request.query_params.get("in_stock")
+
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+
+        if min_price:
+            try:
+                queryset = queryset.filter(price__gte=Decimal(min_price))
+            except InvalidOperation:
+                return Response({"error": "min_price inválido."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if max_price:
+            try:
+                queryset = queryset.filter(price__lte=Decimal(max_price))
+            except InvalidOperation:
+                return Response({"error": "max_price inválido."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if in_stock is not None:
+            if in_stock.lower() in ("1", "true", "yes"):
+                queryset = queryset.filter(quantity_in_stock__gt=0)
+            elif in_stock.lower() in ("0", "false", "no"):
+                queryset = queryset.filter(quantity_in_stock=0)
+            else:
+                return Response(
+                    {"error": "in_stock inválido. Use true/false."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        paginator = ProductPagination()
+        page = paginator.paginate_queryset(queryset.order_by("-created_at"), request)
+        serializer = ProductSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     if not _is_seller(request.user):
         return Response(
@@ -542,7 +586,7 @@ def products_list_create(request):
 
 
 @api_view(["GET", "PUT", "PATCH", "DELETE"])
-@permission_classes([IsAuthenticated])
+@permission_classes([ProductAccessPermission])
 @ratelimit(key="user", rate="60/m", method="GET")
 @ratelimit(key="user", rate="10/m", method="PUT")
 @ratelimit(key="user", rate="10/m", method="PATCH")
@@ -611,19 +655,13 @@ def product_details_with_stock(request, product_id):
 
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsSeller])
 @ratelimit(key="user", rate="30/m", method="GET")
 def company_revenue(request):
     if getattr(request, "limited", False):
         return Response(
             {"error": "Limite máximo de requisições atingido."},
             status=status.HTTP_429_TOO_MANY_REQUESTS,
-        )
-
-    if not _is_seller(request.user):
-        return Response(
-            {"error": "Apenas o dono da empresa pode acessar este endpoint."},
-            status=status.HTTP_403_FORBIDDEN,
         )
 
     total = OrderItem.objects.filter(product__seller=request.user.seller_profile).aggregate(
@@ -636,3 +674,26 @@ def company_revenue(request):
         {"total_revenue": total or 0},
         status=status.HTTP_200_OK,
     )
+
+
+@api_view(["GET", "POST"])
+@permission_classes([CategoryAccessPermission])
+@ratelimit(key="user", rate="60/m", method="GET")
+@ratelimit(key="user", rate="10/m", method="POST")
+def categories_list_create(request):
+    if getattr(request, "limited", False):
+        return Response(
+            {"error": "Limite máximo de requisições atingido."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS,
+        )
+
+    if request.method == "GET":
+        queryset = Category.objects.all().order_by("name")
+        serializer = CategorySerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    serializer = CategorySerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
