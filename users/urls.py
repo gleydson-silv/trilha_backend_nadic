@@ -18,4 +18,8 @@ urlpatterns = [
     path('account/2fa/verify/', views.verify_2fa, name='verify_2fa'),
     path('account/2fa/enable/', views.enable_2fa, name='enable_2fa'),
     path('account/2fa/disable/', views.disable_2fa, name='disable_2fa'),
+    path('products/', views.products_list_create, name='products_list_create'),
+    path('products/<int:product_id>/', views.product_detail_update_delete, name='product_detail_update_delete'),
+    path('products/<int:product_id>/details/', views.product_details_with_stock, name='product_details_with_stock'),
+    path('reports/revenue/', views.company_revenue, name='company_revenue'),
 ]
