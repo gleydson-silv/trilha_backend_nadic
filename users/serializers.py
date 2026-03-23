@@ -164,6 +164,20 @@ class ProductSerializer(serializers.ModelSerializer):
             validated_data["seller"] = request.user.seller_profile
         return super().create(validated_data)
 
+    def validate_price(self, value):
+        if value is None:
+            raise serializers.ValidationError("Preço é obrigatório.")
+        if value <= 0:
+            raise serializers.ValidationError("Preço deve ser maior que zero.")
+        return value
+
+    def validate_quantity_in_stock(self, value):
+        if value is None:
+            raise serializers.ValidationError("Estoque é obrigatório.")
+        if value < 0:
+            raise serializers.ValidationError("Estoque não pode ser negativo.")
+        return value
+
 
 class ProductDetailSerializer(serializers.ModelSerializer):
     class Meta:
