@@ -569,3 +569,53 @@ def products_list_create(request):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET", "PUT", "PATCH", "DELETE"])
+@permission_classes([IsAuthenticated])
+@ratelimit(key="user", rate="60/m", method="GET")
+@ratelimit(key="user", rate="10/m", method="PUT")
+@ratelimit(key="user", rate="10/m", method="PATCH")
+@ratelimit(key="user", rate="10/m", method="DELETE")
+def product_detail_update_delete(request, product_id):
+    if getattr(request, "limited", False):
+        return Response(
+            {"error": "Limite máximo de requisições atingido."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS,
+        )
+
+    try:
+        product = Product.objects.get(pk=product_id)
+    except Product.DoesNotExist:
+        return Response({"error": "Produto não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == "GET":
+        serializer = ProductDetailSerializer(product)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    if not _is_seller(request.user):
+        return Response(
+            {"error": "Apenas vendedores podem editar/remover produtos."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    if product.seller.user_id != request.user.id:
+        return Response(
+            {"error": "Você não tem permissão para alterar este produto."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    if request.method == "DELETE":
+        product.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    serializer = ProductSerializer(
+        product,
+        data=request.data,
+        partial=(request.method == "PATCH"),
+        context={"request": request},
+    )
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
