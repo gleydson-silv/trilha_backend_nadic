@@ -25,15 +25,11 @@ class RegisterSerializer(serializers.ModelSerializer):
             validated_data["email"] = User.objects.normalize_email(email)
         user = User(**validated_data)
         user.set_password(password)
-        ###user.full_clean()
         user.save()
 
         return user
 
     def validate(self, attrs):
-        role = attrs.get("role", User.Role.USER)
-        if role == User.Role.ADMIN:
-            raise serializers.ValidationError("Role admin não é permitido no registro.")
         return attrs
         
 
@@ -113,7 +109,6 @@ class ProfileCompletionSerializer(serializers.Serializer):
                 user.first_name = data.get("first_name", "")
             if "last_name" in data:
                 user.last_name = data.get("last_name", "")
-            ###user.full_clean()
             user.save()
 
             if user.role == User.Role.CUSTOMER:

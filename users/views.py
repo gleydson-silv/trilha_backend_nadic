@@ -241,12 +241,6 @@ def profile(request):
             
         })
     
-    if user.role == 'admin':
-        return Response({
-            'name': user.first_name + " " + user.last_name,
-            'email': user.email,
-        })
-    
     return Response({ 'error': "Perfil não encontrado"}, status = status.HTTP_404_NOT_FOUND)
 
 
@@ -290,18 +284,6 @@ def update_profile(request):
             'cpf': user.cpf,
             'phone_number': user.phone_number,
         })
-    if user.role == 'admin':
-        user.first_name = data.get('first_name', user.first_name)
-        user.last_name  = data.get('last_name', user.last_name)
-        user.email = data.get('email', user.email)
-        user.save()
-        return Response({
-            'name': user.first_name + " " + user.last_name,
-            'email': user.email,
-        })
-
-
-
     return Response({
         'error': "Perfil não encontrado"
     }, status=status.HTTP_404_NOT_FOUND)
@@ -347,18 +329,6 @@ def update_profile_partial(request):
             'cpf': user.cpf,
             'phone_number': user.phone_number,
         })
-    if user.role == 'admin':
-        user.first_name = data.get('first_name', user.first_name)
-        user.last_name  = data.get('last_name', user.last_name)
-        user.email = data.get('email', user.email)
-        user.save()
-        return Response({
-            'name': user.first_name + " " + user.last_name,
-            'email': user.email,
-        })
-
-
-
     return Response({
         'error': "Perfil não encontrado"
     }, status=status.HTTP_404_NOT_FOUND)
