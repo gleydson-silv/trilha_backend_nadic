@@ -1,14 +1,21 @@
 from django.shortcuts import render
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from .serializers import RegisterSerializer, LoginSerializer, ProfileCompletionSerializer
+from .serializers import (
+    RegisterSerializer,
+    LoginSerializer,
+    ProfileCompletionSerializer,
+    ProductSerializer,
+    ProductDetailSerializer,
+)
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from django_ratelimit.decorators import ratelimit
 from django.contrib.auth import authenticate
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from .models import User
+from .models import User, Product, OrderItem
+from django.db.models import Sum, F, DecimalField, ExpressionWrapper
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.http import urlsafe_base64_encode
@@ -526,3 +533,39 @@ def disable_2fa(request):
     user.two_factor_enabled = False
     user.save()
     return Response({"message": "2FA desabilitado com sucesso"}, status=status.HTTP_200_OK)
+
+
+def _is_seller(user):
+    return user.is_authenticated and user.role == User.Role.SELLER
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+@ratelimit(key="user", rate="60/m", method="GET")
+@ratelimit(key="user", rate="10/m", method="POST")
+def products_list_create(request):
+    if getattr(request, "limited", False):
+        return Response(
+            {"error": "Limite máximo de requisições atingido."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS,
+        )
+
+    if request.method == "GET":
+        if _is_seller(request.user):
+            queryset = Product.objects.filter(seller=request.user.seller_profile)
+        else:
+            queryset = Product.objects.all()
+        serializer = ProductSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    if not _is_seller(request.user):
+        return Response(
+            {"error": "Apenas vendedores podem cadastrar produtos."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    serializer = ProductSerializer(data=request.data, context={"request": request})
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
