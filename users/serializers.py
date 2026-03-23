@@ -1,7 +1,7 @@
 from django.db import transaction
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
-from .models import User, Customer, Seller
+from .models import User, Customer, Seller, Product
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -145,3 +145,43 @@ class ProfileCompletionSerializer(serializers.Serializer):
                 seller.save()
 
         return user        
+
+
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = [
+            "id",
+            "name",
+            "description",
+            "price",
+            "quantity_in_stock",
+            "category",
+            "seller",
+            "image",
+            "created_at",
+        ]
+        read_only_fields = ["id", "seller", "created_at"]
+
+    def create(self, validated_data):
+        request = self.context.get("request")
+        if request and hasattr(request.user, "seller_profile"):
+            validated_data["seller"] = request.user.seller_profile
+        return super().create(validated_data)
+
+
+class ProductDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = [
+            "id",
+            "name",
+            "description",
+            "price",
+            "quantity_in_stock",
+            "category",
+            "seller",
+            "image",
+            "created_at",
+        ]
+        read_only_fields = ["id", "seller", "created_at"]
