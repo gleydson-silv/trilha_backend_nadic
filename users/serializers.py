@@ -1,7 +1,7 @@
 from django.db import transaction
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
-from .models import User, Customer, Seller, Product
+from .models import User, Customer, Seller, Product, Category
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -194,3 +194,10 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "seller", "created_at"]
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ["id", "name", "description", "created_at"]
+        read_only_fields = ["id", "created_at"]
