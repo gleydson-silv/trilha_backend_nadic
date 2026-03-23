@@ -638,3 +638,31 @@ def product_details_with_stock(request, product_id):
 
     serializer = ProductDetailSerializer(product)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+@ratelimit(key="user", rate="30/m", method="GET")
+def company_revenue(request):
+    if getattr(request, "limited", False):
+        return Response(
+            {"error": "Limite máximo de requisições atingido."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS,
+        )
+
+    if not _is_seller(request.user):
+        return Response(
+            {"error": "Apenas o dono da empresa pode acessar este endpoint."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    total = OrderItem.objects.filter(product__seller=request.user.seller_profile).aggregate(
+        total_revenue=Sum(
+            ExpressionWrapper(F("quantity") * F("unit_price"), output_field=DecimalField())
+        )
+    )["total_revenue"]
+
+    return Response(
+        {"total_revenue": total or 0},
+        status=status.HTTP_200_OK,
+    )
