@@ -31,29 +31,48 @@ from .models import Address
 import pyotp
 
 
+def ok_response(data=None, message=None, status_code=status.HTTP_200_OK):
+    payload = {"success": True}
+    if message:
+        payload["message"] = message
+    if data is not None:
+        payload["data"] = data
+    return Response(payload, status=status_code)
+
+
+def error_response(error, status_code=status.HTTP_400_BAD_REQUEST, details=None):
+    payload = {"success": False, "error": error}
+    if details is not None:
+        payload["details"] = details
+    return Response(payload, status=status_code)
+
+
 @api_view(['POST'])
 @ratelimit(key='ip', rate='5/m', method='POST')
 def register(request):
     if getattr(request, 'limited', False):
-        return Response(
-            {"error": "Limite máximo de requisições atingido."},
-            status=status.HTTP_429_TOO_MANY_REQUESTS
+        return error_response(
+            "Limite máximo de requisições atingido.",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         )
     
     serializer = RegisterSerializer(data = request.data)
     if serializer.is_valid():
         serializer.save()
-        return Response({"messsage": "Usuário registrado com sucesso! " },status = status.HTTP_201_CREATED)
-    return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+        return ok_response(
+            message="Usuário registrado com sucesso!",
+            status_code=status.HTTP_201_CREATED,
+        )
+    return error_response("Dados inválidos.", details=serializer.errors)
 
 
 @api_view(['POST'])
 @ratelimit(key='ip', rate='5/m', method='POST')
 def login(request):
     if getattr(request, 'limited', False):
-        return Response(
-            {"error": "Limite máximo de requisições atingido."},
-            status=status.HTTP_429_TOO_MANY_REQUESTS
+        return error_response(
+            "Limite máximo de requisições atingido.",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         )
     
     data = request.data
@@ -63,19 +82,22 @@ def login(request):
     user = authenticate(email = email, password=password)
     
     if not user:
-        return Response({"error": "Credenciais inválidas"}, status = status.HTTP_401_UNAUTHORIZED)
+        return error_response("Credenciais inválidas", status_code=status.HTTP_401_UNAUTHORIZED)
     
     if user.two_factor_enabled:
-        return Response({
-            "2fa_required": True,
-            "message": "Informe o codigo de verificação"}, status = status.HTTP_200_OK)
+        return ok_response(
+            data={"2fa_required": True},
+            message="Informe o codigo de verificação",
+        )
     
     refresh = RefreshToken.for_user(user)
     
-    return Response({
-        "access": str(refresh.access_token),
-        "refresh": str(refresh)
-        })
+    return ok_response(
+        data={
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+        }
+    )
 
 
 @api_view(['PATCH'])
@@ -83,9 +105,9 @@ def login(request):
 @ratelimit(key='user', rate='5/m', method='PATCH')
 def complete_profile(request):
     if getattr(request, 'limited', False):
-        return Response(
-            {"error": "Limite máximo de requisições atingido."},
-            status=status.HTTP_429_TOO_MANY_REQUESTS
+        return error_response(
+            "Limite máximo de requisições atingido.",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         )
 
     serializer = ProfileCompletionSerializer(
@@ -95,11 +117,8 @@ def complete_profile(request):
     )
     if serializer.is_valid():
         serializer.save()
-        return Response(
-            {"message": "Perfil atualizado com sucesso."},
-            status=status.HTTP_200_OK
-        )
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return ok_response(message="Perfil atualizado com sucesso.")
+    return error_response("Dados inválidos.", details=serializer.errors)
 
 
 @api_view(['POST'])
@@ -107,18 +126,21 @@ def complete_profile(request):
 @ratelimit(key='user', rate='5/m', method='POST')
 def logout(request):
     if getattr(request, 'limited', False):
-        return Response(
-            {"error": "Limite máximo de requisições atingido."},
-            status=status.HTTP_429_TOO_MANY_REQUESTS
+        return error_response(
+            "Limite máximo de requisições atingido.",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         )
     
     try:
         refresh_token = request.data["refresh"]
         token = RefreshToken(refresh_token)
         token.blacklist()
-        return Response({"message": "Logout realizado com sucesso."}, status=status.HTTP_205_RESET_CONTENT)
+        return ok_response(
+            message="Logout realizado com sucesso.",
+            status_code=status.HTTP_205_RESET_CONTENT,
+        )
     except Exception as e:
-        return Response({"error": "Token inválido ou já expirado."}, status=status.HTTP_400_BAD_REQUEST)
+        return error_response("Token inválido ou já expirado.")
     
 token_generator = PasswordResetTokenGenerator()
 
@@ -127,16 +149,16 @@ token_generator = PasswordResetTokenGenerator()
 @ratelimit(key='user', rate = '5/m', method='POST')
 def forgot_password(request):
     if getattr(request, 'limited', False):
-        return Response(
-            {"error": "Limite máximo de requisições atingido."},
-            status=status.HTTP_429_TOO_MANY_REQUESTS
+        return error_response(
+            "Limite máximo de requisições atingido.",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         )
     
     email = request.data.get("email")
     try:
         user = User.objects.get(email=email)
     except User.DoesNotExist:
-        return Response({"error": "Usuário não encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        return error_response("Usuário não encontrado", status_code=status.HTTP_404_NOT_FOUND)
 
     token = token_generator.make_token(user)
     uid = urlsafe_base64_encode(force_bytes(user.pk))
@@ -151,35 +173,35 @@ def forgot_password(request):
         fail_silently=False,
     )
 
-    return Response({"message": "Email de recuperação enviado"})
+    return ok_response(message="Email de recuperação enviado")
 
 
 @api_view(['POST'])
 @ratelimit(key='user', rate='5/m', method='POST')
 def reset_password(request,uidb64, token):
     if getattr(request, 'limited', False):
-        return Response(
-            {"error": "Limite máximo de requisições atingido."},
-            status=status.HTTP_429_TOO_MANY_REQUESTS
+        return error_response(
+            "Limite máximo de requisições atingido.",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         )
     
     try:
         uid = urlsafe_base64_decode(uidb64).decode()
         user = User.objects.get(pk = uid)
     except (User.DoesNotExist, ValueError, TypeError):
-        return Response({'error': "Usuario não encontrado"}, status = status.HTTP_404_NOT_FOUND)
+        return error_response("Usuario não encontrado", status_code=status.HTTP_404_NOT_FOUND)
     
     if not token_generator.check_token(user, token):
-        return Response({'error': "Token invalido ou expirado"}, status = status.HTTP_400_BAD_REQUEST)
+        return error_response("Token invalido ou expirado")
     
     new_password = request.data.get('password')
     if not new_password:
-        return Response({'error': "A nova senha é obrigatoria"}, status = status.HTTP_400_BAD_REQUEST)
+        return error_response("A nova senha é obrigatoria")
     
     user.set_password(new_password)
     user.save()
     
-    return Response({'message': "Senha alterada com sucesso"}, status=status.HTTP_200_OK)
+    return ok_response(message="Senha alterada com sucesso")
 
 
 @api_view(['POST'])
@@ -187,9 +209,9 @@ def reset_password(request,uidb64, token):
 @permission_classes([IsAuthenticated])
 def change_password(request):
     if getattr(request, 'limited', False):
-        return Response(
-            {"error": "Limite máximo de requisições atingido."},
-            status=status.HTTP_429_TOO_MANY_REQUESTS
+        return error_response(
+            "Limite máximo de requisições atingido.",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         )
     
     user = request.user
@@ -197,23 +219,23 @@ def change_password(request):
     new_password = request.data.get('new_password')
     
     if not current_password or not new_password:
-        return Response({'error': "As senhas atual e nova são obrigatórias"}, status = status.HTTP_400_BAD_REQUEST)
+        return error_response("As senhas atual e nova são obrigatórias")
     
     if not user.check_password(current_password):
-        return Response({'error': "Senha atual incorreta"}, status = status.HTTP_400_BAD_REQUEST)
+        return error_response("Senha atual incorreta")
     
     if new_password == current_password:
-        return Response({'error': "A nova senha deve ser diferente da senha atual"}, status = status.HTTP_400_BAD_REQUEST)
+        return error_response("A nova senha deve ser diferente da senha atual")
     
     try:
         validate_password(new_password, user)
     except Exception as e:
-        return Response({'error': str(e)}, status = status.HTTP_400_BAD_REQUEST)
+        return error_response(str(e))
     
     user.set_password(new_password)
     user.save()
 
-    return Response({'message': "Senha alterada com sucesso"}, status=status.HTTP_200_OK)
+    return ok_response(message="Senha alterada com sucesso")
 
 
 @api_view(['GET'])
@@ -221,14 +243,14 @@ def change_password(request):
 @ratelimit(key='user', rate='60/m', method='GET')
 def profile(request):
     if getattr(request, 'limited', False):
-        return Response(
-            {"error": "Limite máximo de requisições atingido."},
-            status=status.HTTP_429_TOO_MANY_REQUESTS
+        return error_response(
+            "Limite máximo de requisições atingido.",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         )
     
     user = request.user
     if user.role == 'seller':
-        return Response({
+        return ok_response(data={
             'name': user.first_name + " " + user.last_name,
             'email': user.email,
             'cnpj': user.cnpj,
@@ -237,15 +259,14 @@ def profile(request):
         })
     
     if user.role == 'customer':
-        return Response({
+        return ok_response(data={
             'name': user.first_name + " " + user.last_name,
             'email': user.email,
             'cpf': user.cpf,
             'phone_number': user.phone_number,
-            
         })
-    
-    return Response({ 'error': "Perfil não encontrado"}, status = status.HTTP_404_NOT_FOUND)
+
+    return error_response("Perfil não encontrado", status_code=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['PUT'])
@@ -253,9 +274,9 @@ def profile(request):
 @ratelimit(key='user', rate='5/m', method='PUT')
 def update_profile(request):
     if getattr(request, 'limited', False):
-        return Response(
-            {"error": "Limite máximo de requisições atingido."},
-            status=status.HTTP_429_TOO_MANY_REQUESTS
+        return error_response(
+            "Limite máximo de requisições atingido.",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         )
     
     user = request.user
@@ -269,7 +290,7 @@ def update_profile(request):
         user.last_name  = data.get('last_name', user.last_name)
         user.email = data.get('email', user.email)
         user.save()
-        return Response({
+        return ok_response(data={
             'name': user.first_name + " " + user.last_name,
             'email': user.email,
             'cnpj': user.cnpj,
@@ -282,15 +303,13 @@ def update_profile(request):
         user.last_name  = data.get('last_name', user.last_name)
         user.email = data.get('email', user.email)
         user.save()
-        return Response({
+        return ok_response(data={
             'name': user.first_name + " " + user.last_name,
             'email': user.email,
             'cpf': user.cpf,
             'phone_number': user.phone_number,
         })
-    return Response({
-        'error': "Perfil não encontrado"
-    }, status=status.HTTP_404_NOT_FOUND)
+    return error_response("Perfil não encontrado", status_code=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['POST'])
@@ -298,9 +317,9 @@ def update_profile(request):
 @ratelimit(key='user', rate='5/m', method='POST')
 def update_profile_partial(request):
     if getattr(request, 'limited', False):
-        return Response(
-            {"error": "Limite máximo de requisições atingido."},
-            status=status.HTTP_429_TOO_MANY_REQUESTS
+        return error_response(
+            "Limite máximo de requisições atingido.",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         )
     
     user = request.user
@@ -314,7 +333,7 @@ def update_profile_partial(request):
         user.last_name  = data.get('last_name', user.last_name)
         user.email = data.get('email', user.email)
         user.save()
-        return Response({
+        return ok_response(data={
             'name': user.first_name + " " + user.last_name,
             'email': user.email,
             'cnpj': user.cnpj,
@@ -327,15 +346,13 @@ def update_profile_partial(request):
         user.last_name  = data.get('last_name', user.last_name)
         user.email = data.get('email', user.email)
         user.save()
-        return Response({
+        return ok_response(data={
             'name': user.first_name + " " + user.last_name,
             'email': user.email,
             'cpf': user.cpf,
             'phone_number': user.phone_number,
         })
-    return Response({
-        'error': "Perfil não encontrado"
-    }, status=status.HTTP_404_NOT_FOUND)
+    return error_response("Perfil não encontrado", status_code=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['GET'])
@@ -343,9 +360,9 @@ def update_profile_partial(request):
 @ratelimit(key='user', rate='60/m', method='GET')
 def consultar_cep(request, cep):
     if getattr(request, 'limited', False):
-        return Response(
-            {"error": "Limite máximo de requisições atingido."},
-            status=status.HTTP_429_TOO_MANY_REQUESTS
+        return error_response(
+            "Limite máximo de requisições atingido.",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         )
 
     try:
@@ -353,33 +370,33 @@ def consultar_cep(request, cep):
         response = requests.get(url, timeout=5)
 
         if response.status_code != 200:
-            return Response(
-                {"error": "Erro ao consultar serviço de CEP"},
-                status=status.HTTP_502_BAD_GATEWAY
+            return error_response(
+                "Erro ao consultar serviço de CEP",
+                status_code=status.HTTP_502_BAD_GATEWAY,
             )
 
         data = response.json()
 
         
         if "erro" in data:
-            return Response(
-                {"error": "CEP inválido ou não encontrado"},
-                status=status.HTTP_404_NOT_FOUND
+            return error_response(
+                "CEP inválido ou não encontrado",
+                status_code=status.HTTP_404_NOT_FOUND,
             )
         Address.zip_code = cep
         Address.save()
-        return Response(data, status=status.HTTP_200_OK)
+        return ok_response(data=data)
 
     except requests.exceptions.Timeout:
-        return Response(
-            {"error": "Timeout ao consultar CEP"},
-            status=status.HTTP_504_GATEWAY_TIMEOUT
+        return error_response(
+            "Timeout ao consultar CEP",
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
         )
 
     except requests.exceptions.RequestException:
-        return Response(
-            {"error": "Erro de conexão com o serviço de CEP"},
-            status=status.HTTP_503_SERVICE_UNAVAILABLE
+        return error_response(
+            "Erro de conexão com o serviço de CEP",
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
         )
 
 
@@ -388,9 +405,9 @@ def consultar_cep(request, cep):
 @ratelimit(key='user', rate='5/m', method='POST')
 def register_address(request):
     if getattr(request, 'limited', False):
-        return Response(
-            {"error": "Limite máximo de requisições atingido."},
-            status=status.HTTP_429_TOO_MANY_REQUESTS
+        return error_response(
+            "Limite máximo de requisições atingido.",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         )
     
     user = request.user
@@ -407,9 +424,8 @@ def register_address(request):
         state=data.get('state')
     )
 
-    return Response({
-        'message': "Endereço registrado com sucesso",
-        'address': {
+    return ok_response(
+        data={
             'zip_code': address.zip_code,
             'street': address.street,
             'number': address.number,
@@ -417,8 +433,10 @@ def register_address(request):
             'neighborhood': address.neighborhood,
             'city': address.city,
             'state': address.state
-        }
-    }, status=status.HTTP_201_CREATED)
+        },
+        message="Endereço registrado com sucesso",
+        status_code=status.HTTP_201_CREATED,
+    )
 
 
 @api_view(['DELETE'])
@@ -426,23 +444,23 @@ def register_address(request):
 @ratelimit(key='user', rate='5/m', method='DELETE')
 def delete_account(request):
     if getattr(request, 'limited', False):
-        return Response(
-            {"error": "Limite máximo de requisições atingido."},
-            status=status.HTTP_429_TOO_MANY_REQUESTS
+        return error_response(
+            "Limite máximo de requisições atingido.",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         )
     
     user = request.user
     user.delete()
-    return Response({"message": "Conta deletada com sucesso"}, status=status.HTTP_200_OK)
+    return ok_response(message="Conta deletada com sucesso")
 
 
 @api_view(['POST'])
 @ratelimit(key='user', rate='5/m', method='POST')
 def verify_2fa(request):
     if getattr(request, 'limited', False):
-        return Response(
-            {"error": "Limite máximo de requisições atingido."},
-            status=status.HTTP_429_TOO_MANY_REQUESTS
+        return error_response(
+            "Limite máximo de requisições atingido.",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         )
     
     email = request.data.get("email")
@@ -450,19 +468,21 @@ def verify_2fa(request):
 
     user = User.objects.filter(email=email).first()
     if not user:
-        return Response({"error": "Usuário não encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        return error_response("Usuário não encontrado", status_code=status.HTTP_404_NOT_FOUND)
 
     totp = pyotp.TOTP(user.two_factor_secret)
 
     if not totp.verify(code):
-        return Response({"error": "Código inválido"}, status=status.HTTP_400_BAD_REQUEST)
+        return error_response("Código inválido")
 
     refresh = RefreshToken.for_user(user)
 
-    return Response({
-        "access": str(refresh.access_token),
-        "refresh": str(refresh)
-    })
+    return ok_response(
+        data={
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+        }
+    )
 
 
 @api_view(['POST'])
@@ -470,22 +490,25 @@ def verify_2fa(request):
 @permission_classes([IsAuthenticated])
 def enable_2fa(request):
     if getattr(request, 'limited', False):
-        return Response(
-            {"error": "Limite máximo de requisições atingido."},
-            status=status.HTTP_429_TOO_MANY_REQUESTS
+        return error_response(
+            "Limite máximo de requisições atingido.",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         )
     
     user = request.user
 
     if user.two_factor_enabled:
-        return Response({"error": "2FA já está habilitado"}, status=status.HTTP_400_BAD_REQUEST)
+        return error_response("2FA já está habilitado")
     
     secret = pyotp.random_base32()
     user.two_factor_secret = secret
     user.two_factor_enabled = True
     user.save()
 
-    return Response({"message": "2FA habilitado com sucesso", "secret": secret}, status=status.HTTP_200_OK)
+    return ok_response(
+        data={"secret": secret},
+        message="2FA habilitado com sucesso",
+    )
 
 
 @api_view(['POST'])
@@ -493,20 +516,20 @@ def enable_2fa(request):
 @permission_classes([IsAuthenticated])
 def disable_2fa(request):
     if getattr(request, 'limited', False):
-        return Response(
-            {"error": "Limite máximo de requisições atingido."},
-            status=status.HTTP_429_TOO_MANY_REQUESTS
+        return error_response(
+            "Limite máximo de requisições atingido.",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         )
     
     user = request.user
 
     if not user.two_factor_enabled:
-        return Response({"error": "2FA já está desabilitado"}, status=status.HTTP_400_BAD_REQUEST)
+        return error_response("2FA já está desabilitado")
     
     user.two_factor_secret = ""
     user.two_factor_enabled = False
     user.save()
-    return Response({"message": "2FA desabilitado com sucesso"}, status=status.HTTP_200_OK)
+    return ok_response(message="2FA desabilitado com sucesso")
 
 
 def _is_seller(user):
@@ -525,9 +548,9 @@ class ProductPagination(PageNumberPagination):
 @ratelimit(key="user", rate="10/m", method="POST")
 def products_list_create(request):
     if getattr(request, "limited", False):
-        return Response(
-            {"error": "Limite máximo de requisições atingido."},
-            status=status.HTTP_429_TOO_MANY_REQUESTS,
+        return error_response(
+            "Limite máximo de requisições atingido.",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         )
 
     if request.method == "GET":
@@ -548,13 +571,13 @@ def products_list_create(request):
             try:
                 queryset = queryset.filter(price__gte=Decimal(min_price))
             except InvalidOperation:
-                return Response({"error": "min_price inválido."}, status=status.HTTP_400_BAD_REQUEST)
+                return error_response("min_price inválido.")
 
         if max_price:
             try:
                 queryset = queryset.filter(price__lte=Decimal(max_price))
             except InvalidOperation:
-                return Response({"error": "max_price inválido."}, status=status.HTTP_400_BAD_REQUEST)
+                return error_response("max_price inválido.")
 
         if in_stock is not None:
             if in_stock.lower() in ("1", "true", "yes"):
@@ -562,27 +585,25 @@ def products_list_create(request):
             elif in_stock.lower() in ("0", "false", "no"):
                 queryset = queryset.filter(quantity_in_stock=0)
             else:
-                return Response(
-                    {"error": "in_stock inválido. Use true/false."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+                return error_response("in_stock inválido. Use true/false.")
 
         paginator = ProductPagination()
         page = paginator.paginate_queryset(queryset.order_by("-created_at"), request)
         serializer = ProductSerializer(page, many=True)
-        return paginator.get_paginated_response(serializer.data)
+        paginated = paginator.get_paginated_response(serializer.data).data
+        return ok_response(data=paginated)
 
     if not _is_seller(request.user):
-        return Response(
-            {"error": "Apenas vendedores podem cadastrar produtos."},
-            status=status.HTTP_403_FORBIDDEN,
+        return error_response(
+            "Apenas vendedores podem cadastrar produtos.",
+            status_code=status.HTTP_403_FORBIDDEN,
         )
 
     serializer = ProductSerializer(data=request.data, context={"request": request})
     if serializer.is_valid():
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return ok_response(data=serializer.data, status_code=status.HTTP_201_CREATED)
+    return error_response("Dados inválidos.", details=serializer.errors)
 
 
 @api_view(["GET", "PUT", "PATCH", "DELETE"])
@@ -593,35 +614,35 @@ def products_list_create(request):
 @ratelimit(key="user", rate="10/m", method="DELETE")
 def product_detail_update_delete(request, product_id):
     if getattr(request, "limited", False):
-        return Response(
-            {"error": "Limite máximo de requisições atingido."},
-            status=status.HTTP_429_TOO_MANY_REQUESTS,
+        return error_response(
+            "Limite máximo de requisições atingido.",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         )
 
     try:
         product = Product.objects.get(pk=product_id)
     except Product.DoesNotExist:
-        return Response({"error": "Produto não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+        return error_response("Produto não encontrado.", status_code=status.HTTP_404_NOT_FOUND)
 
     if request.method == "GET":
         serializer = ProductDetailSerializer(product)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return ok_response(data=serializer.data)
 
     if not _is_seller(request.user):
-        return Response(
-            {"error": "Apenas vendedores podem editar/remover produtos."},
-            status=status.HTTP_403_FORBIDDEN,
+        return error_response(
+            "Apenas vendedores podem editar/remover produtos.",
+            status_code=status.HTTP_403_FORBIDDEN,
         )
 
     if product.seller.user_id != request.user.id:
-        return Response(
-            {"error": "Você não tem permissão para alterar este produto."},
-            status=status.HTTP_403_FORBIDDEN,
+        return error_response(
+            "Você não tem permissão para alterar este produto.",
+            status_code=status.HTTP_403_FORBIDDEN,
         )
 
     if request.method == "DELETE":
         product.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return ok_response(status_code=status.HTTP_204_NO_CONTENT)
 
     serializer = ProductSerializer(
         product,
@@ -631,8 +652,8 @@ def product_detail_update_delete(request, product_id):
     )
     if serializer.is_valid():
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return ok_response(data=serializer.data)
+    return error_response("Dados inválidos.", details=serializer.errors)
 
 
 @api_view(["GET"])
@@ -640,18 +661,18 @@ def product_detail_update_delete(request, product_id):
 @ratelimit(key="user", rate="60/m", method="GET")
 def product_details_with_stock(request, product_id):
     if getattr(request, "limited", False):
-        return Response(
-            {"error": "Limite máximo de requisições atingido."},
-            status=status.HTTP_429_TOO_MANY_REQUESTS,
+        return error_response(
+            "Limite máximo de requisições atingido.",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         )
 
     try:
         product = Product.objects.get(pk=product_id)
     except Product.DoesNotExist:
-        return Response({"error": "Produto não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+        return error_response("Produto não encontrado.", status_code=status.HTTP_404_NOT_FOUND)
 
     serializer = ProductDetailSerializer(product)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    return ok_response(data=serializer.data)
 
 
 @api_view(["GET"])
@@ -659,9 +680,9 @@ def product_details_with_stock(request, product_id):
 @ratelimit(key="user", rate="30/m", method="GET")
 def company_revenue(request):
     if getattr(request, "limited", False):
-        return Response(
-            {"error": "Limite máximo de requisições atingido."},
-            status=status.HTTP_429_TOO_MANY_REQUESTS,
+        return error_response(
+            "Limite máximo de requisições atingido.",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         )
 
     total = OrderItem.objects.filter(product__seller=request.user.seller_profile).aggregate(
@@ -670,10 +691,7 @@ def company_revenue(request):
         )
     )["total_revenue"]
 
-    return Response(
-        {"total_revenue": total or 0},
-        status=status.HTTP_200_OK,
-    )
+    return ok_response(data={"total_revenue": total or 0})
 
 
 @api_view(["GET", "POST"])
@@ -682,21 +700,21 @@ def company_revenue(request):
 @ratelimit(key="user", rate="10/m", method="POST")
 def categories_list_create(request):
     if getattr(request, "limited", False):
-        return Response(
-            {"error": "Limite máximo de requisições atingido."},
-            status=status.HTTP_429_TOO_MANY_REQUESTS,
+        return error_response(
+            "Limite máximo de requisições atingido.",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         )
 
     if request.method == "GET":
         queryset = Category.objects.all().order_by("name")
         serializer = CategorySerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return ok_response(data=serializer.data)
 
     serializer = CategorySerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return ok_response(data=serializer.data, status_code=status.HTTP_201_CREATED)
+    return error_response("Dados inválidos.", details=serializer.errors)
 
 
 @api_view(["GET", "PUT", "PATCH", "DELETE"])
@@ -707,23 +725,23 @@ def categories_list_create(request):
 @ratelimit(key="user", rate="10/m", method="DELETE")
 def category_detail_update_delete(request, category_id):
     if getattr(request, "limited", False):
-        return Response(
-            {"error": "Limite máximo de requisições atingido."},
-            status=status.HTTP_429_TOO_MANY_REQUESTS,
+        return error_response(
+            "Limite máximo de requisições atingido.",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         )
 
     try:
         category = Category.objects.get(pk=category_id)
     except Category.DoesNotExist:
-        return Response({"error": "Categoria não encontrada."}, status=status.HTTP_404_NOT_FOUND)
+        return error_response("Categoria não encontrada.", status_code=status.HTTP_404_NOT_FOUND)
 
     if request.method == "GET":
         serializer = CategorySerializer(category)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return ok_response(data=serializer.data)
 
     if request.method == "DELETE":
         category.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return ok_response(status_code=status.HTTP_204_NO_CONTENT)
 
     serializer = CategorySerializer(
         category,
@@ -732,5 +750,5 @@ def category_detail_update_delete(request, category_id):
     )
     if serializer.is_valid():
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return ok_response(data=serializer.data)
+    return error_response("Dados inválidos.", details=serializer.errors)
