@@ -8,6 +8,7 @@ from .serializers import (
     ProductSerializer,
     ProductDetailSerializer,
     CategorySerializer,
+    normalize_serializer_errors,
 )
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -63,7 +64,7 @@ def register(request):
             message="Usuário registrado com sucesso!",
             status_code=status.HTTP_201_CREATED,
         )
-    return error_response("Dados inválidos.", details=serializer.errors)
+    return error_response("Dados inválidos.", details=normalize_serializer_errors(serializer.errors))
 
 
 @api_view(['POST'])
@@ -118,7 +119,7 @@ def complete_profile(request):
     if serializer.is_valid():
         serializer.save()
         return ok_response(message="Perfil atualizado com sucesso.")
-    return error_response("Dados inválidos.", details=serializer.errors)
+    return error_response("Dados inválidos.", details=normalize_serializer_errors(serializer.errors))
 
 
 @api_view(['POST'])
@@ -603,7 +604,7 @@ def products_list_create(request):
     if serializer.is_valid():
         serializer.save()
         return ok_response(data=serializer.data, status_code=status.HTTP_201_CREATED)
-    return error_response("Dados inválidos.", details=serializer.errors)
+    return error_response("Dados inválidos.", details=normalize_serializer_errors(serializer.errors))
 
 
 @api_view(["GET", "PUT", "PATCH", "DELETE"])
@@ -653,7 +654,7 @@ def product_detail_update_delete(request, product_id):
     if serializer.is_valid():
         serializer.save()
         return ok_response(data=serializer.data)
-    return error_response("Dados inválidos.", details=serializer.errors)
+    return error_response("Dados inválidos.", details=normalize_serializer_errors(serializer.errors))
 
 
 @api_view(["GET"])
@@ -714,7 +715,7 @@ def categories_list_create(request):
     if serializer.is_valid():
         serializer.save()
         return ok_response(data=serializer.data, status_code=status.HTTP_201_CREATED)
-    return error_response("Dados inválidos.", details=serializer.errors)
+    return error_response("Dados inválidos.", details=normalize_serializer_errors(serializer.errors))
 
 
 @api_view(["GET", "PUT", "PATCH", "DELETE"])
@@ -751,4 +752,4 @@ def category_detail_update_delete(request, category_id):
     if serializer.is_valid():
         serializer.save()
         return ok_response(data=serializer.data)
-    return error_response("Dados inválidos.", details=serializer.errors)
+    return error_response("Dados inválidos.", details=normalize_serializer_errors(serializer.errors))

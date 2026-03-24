@@ -1,6 +1,7 @@
 from django.db import transaction
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
+from rest_framework.settings import api_settings
 from .models import User, Customer, Seller, Product, Category
 
 
@@ -201,3 +202,23 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = ["id", "name", "description", "created_at"]
         read_only_fields = ["id", "created_at"]
+
+
+def normalize_serializer_errors(errors):
+    normalized = []
+
+    def walk(path, value):
+        if isinstance(value, dict):
+            for key, child in value.items():
+                next_path = f"{path}.{key}" if path else str(key)
+                walk(next_path, child)
+            return
+        if isinstance(value, list):
+            for item in value:
+                walk(path, item)
+            return
+        field = path or api_settings.NON_FIELD_ERRORS_KEY
+        normalized.append({"field": field, "message": str(value)})
+
+    walk("", errors)
+    return normalized
