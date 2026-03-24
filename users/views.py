@@ -17,7 +17,7 @@ from django.contrib.auth import authenticate
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from .models import User, Product, OrderItem, Category
+from .models import User, Product, OrderItem, Category, Seller, Customer
 from django.db.models import Sum, F, DecimalField, ExpressionWrapper
 from decimal import Decimal, InvalidOperation
 from .permissions import IsSeller, ProductAccessPermission, CategoryAccessPermission
@@ -251,21 +251,16 @@ def profile(request):
     
     user = request.user
     if user.role == 'seller':
-        return ok_response(data={
-            'name': user.first_name + " " + user.last_name,
-            'email': user.email,
-            'cnpj': user.cnpj,
-            'company_name': user.company_name,
-            'phone_number': user.phone_number,
-        })
+        seller = getattr(user, "seller_profile", None)
+        if not seller:
+            return error_response("Perfil de vendedor não encontrado", status_code=status.HTTP_404_NOT_FOUND)
+        return ok_response(data=_seller_payload(user, seller))
     
     if user.role == 'customer':
-        return ok_response(data={
-            'name': user.first_name + " " + user.last_name,
-            'email': user.email,
-            'cpf': user.cpf,
-            'phone_number': user.phone_number,
-        })
+        customer = getattr(user, "customer_profile", None)
+        if not customer:
+            return error_response("Perfil de cliente não encontrado", status_code=status.HTTP_404_NOT_FOUND)
+        return ok_response(data=_customer_payload(user, customer))
 
     return error_response("Perfil não encontrado", status_code=status.HTTP_404_NOT_FOUND)
 
@@ -284,32 +279,28 @@ def update_profile(request):
     data = request.data
 
     if user.role == 'seller':
-        user.cnpj = data.get('cnpj', user.cnpj)
-        user.company_name = data.get('company_name', user.company_name)
-        user.phone_number = data.get('phone_number', user.phone_number)
         user.first_name = data.get('first_name', user.first_name)
         user.last_name  = data.get('last_name', user.last_name)
         user.email = data.get('email', user.email)
         user.save()
-        return ok_response(data={
-            'name': user.first_name + " " + user.last_name,
-            'email': user.email,
-            'cnpj': user.cnpj,
-            'company_name': user.company_name,
-            'phone_number': user.phone_number,
-        })
+        seller, _ = Seller.objects.get_or_create(user=user)
+        seller.cnpj = data.get('cnpj', seller.cnpj)
+        seller.company_name = data.get('company_name', seller.company_name)
+        seller.phone_number = data.get('phone_number', seller.phone_number)
+        seller.save()
+        return ok_response(data=_seller_payload(user, seller))
     if user.role == 'customer':
-        user.phone_number = data.get('phone_number', user.phone_number)
         user.first_name = data.get('first_name', user.first_name)
         user.last_name  = data.get('last_name', user.last_name)
         user.email = data.get('email', user.email)
         user.save()
-        return ok_response(data={
-            'name': user.first_name + " " + user.last_name,
-            'email': user.email,
-            'cpf': user.cpf,
-            'phone_number': user.phone_number,
-        })
+        customer, _ = Customer.objects.get_or_create(user=user)
+        customer.cpf = data.get('cpf', customer.cpf)
+        customer.phone_number = data.get('phone_number', customer.phone_number)
+        customer.first_name = user.first_name
+        customer.last_name = user.last_name
+        customer.save()
+        return ok_response(data=_customer_payload(user, customer))
     return error_response("Perfil não encontrado", status_code=status.HTTP_404_NOT_FOUND)
 
 
@@ -327,32 +318,39 @@ def update_profile_partial(request):
     data = request.data
 
     if user.role == 'seller':
-        user.cnpj = data.get('cnpj', user.cnpj)
-        user.company_name = data.get('company_name', user.company_name)
-        user.phone_number = data.get('phone_number', user.phone_number)
-        user.first_name = data.get('first_name', user.first_name)
-        user.last_name  = data.get('last_name', user.last_name)
-        user.email = data.get('email', user.email)
+        if 'first_name' in data:
+            user.first_name = data.get('first_name', user.first_name)
+        if 'last_name' in data:
+            user.last_name  = data.get('last_name', user.last_name)
+        if 'email' in data:
+            user.email = data.get('email', user.email)
         user.save()
-        return ok_response(data={
-            'name': user.first_name + " " + user.last_name,
-            'email': user.email,
-            'cnpj': user.cnpj,
-            'company_name': user.company_name,
-            'phone_number': user.phone_number,
-        })
+        seller, _ = Seller.objects.get_or_create(user=user)
+        if 'cnpj' in data:
+            seller.cnpj = data.get('cnpj', seller.cnpj)
+        if 'company_name' in data:
+            seller.company_name = data.get('company_name', seller.company_name)
+        if 'phone_number' in data:
+            seller.phone_number = data.get('phone_number', seller.phone_number)
+        seller.save()
+        return ok_response(data=_seller_payload(user, seller))
     if user.role == 'customer':
-        user.phone_number = data.get('phone_number', user.phone_number)
-        user.first_name = data.get('first_name', user.first_name)
-        user.last_name  = data.get('last_name', user.last_name)
-        user.email = data.get('email', user.email)
+        if 'first_name' in data:
+            user.first_name = data.get('first_name', user.first_name)
+        if 'last_name' in data:
+            user.last_name  = data.get('last_name', user.last_name)
+        if 'email' in data:
+            user.email = data.get('email', user.email)
         user.save()
-        return ok_response(data={
-            'name': user.first_name + " " + user.last_name,
-            'email': user.email,
-            'cpf': user.cpf,
-            'phone_number': user.phone_number,
-        })
+        customer, _ = Customer.objects.get_or_create(user=user)
+        if 'cpf' in data:
+            customer.cpf = data.get('cpf', customer.cpf)
+        if 'phone_number' in data:
+            customer.phone_number = data.get('phone_number', customer.phone_number)
+        customer.first_name = user.first_name
+        customer.last_name = user.last_name
+        customer.save()
+        return ok_response(data=_customer_payload(user, customer))
     return error_response("Perfil não encontrado", status_code=status.HTTP_404_NOT_FOUND)
 
 
@@ -535,6 +533,25 @@ def disable_2fa(request):
 
 def _is_seller(user):
     return user.is_authenticated and user.role == User.Role.SELLER
+
+
+def _seller_payload(user, seller):
+    return {
+        "name": f"{user.first_name} {user.last_name}".strip(),
+        "email": user.email,
+        "cnpj": seller.cnpj,
+        "company_name": seller.company_name,
+        "phone_number": seller.phone_number,
+    }
+
+
+def _customer_payload(user, customer):
+    return {
+        "name": f"{user.first_name} {user.last_name}".strip(),
+        "email": user.email,
+        "cpf": customer.cpf,
+        "phone_number": customer.phone_number,
+    }
 
 
 class ProductPagination(PageNumberPagination):
