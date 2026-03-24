@@ -27,6 +27,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 import requests
 from .models import Address
 import pyotp
@@ -287,6 +288,10 @@ def update_profile(request):
         seller.cnpj = data.get('cnpj', seller.cnpj)
         seller.company_name = data.get('company_name', seller.company_name)
         seller.phone_number = data.get('phone_number', seller.phone_number)
+        try:
+            seller.full_clean()
+        except DjangoValidationError as e:
+            return error_response("Dados inválidos.", details=normalize_serializer_errors(e.message_dict))
         seller.save()
         return ok_response(data=_seller_payload(user, seller))
     if user.role == 'customer':
@@ -299,6 +304,10 @@ def update_profile(request):
         customer.phone_number = data.get('phone_number', customer.phone_number)
         customer.first_name = user.first_name
         customer.last_name = user.last_name
+        try:
+            customer.full_clean()
+        except DjangoValidationError as e:
+            return error_response("Dados inválidos.", details=normalize_serializer_errors(e.message_dict))
         customer.save()
         return ok_response(data=_customer_payload(user, customer))
     return error_response("Perfil não encontrado", status_code=status.HTTP_404_NOT_FOUND)
@@ -332,6 +341,10 @@ def update_profile_partial(request):
             seller.company_name = data.get('company_name', seller.company_name)
         if 'phone_number' in data:
             seller.phone_number = data.get('phone_number', seller.phone_number)
+        try:
+            seller.full_clean()
+        except DjangoValidationError as e:
+            return error_response("Dados inválidos.", details=normalize_serializer_errors(e.message_dict))
         seller.save()
         return ok_response(data=_seller_payload(user, seller))
     if user.role == 'customer':
@@ -349,6 +362,10 @@ def update_profile_partial(request):
             customer.phone_number = data.get('phone_number', customer.phone_number)
         customer.first_name = user.first_name
         customer.last_name = user.last_name
+        try:
+            customer.full_clean()
+        except DjangoValidationError as e:
+            return error_response("Dados inválidos.", details=normalize_serializer_errors(e.message_dict))
         customer.save()
         return ok_response(data=_customer_payload(user, customer))
     return error_response("Perfil não encontrado", status_code=status.HTTP_404_NOT_FOUND)
@@ -412,7 +429,7 @@ def register_address(request):
     user = request.user
     data = request.data
 
-    address = Address.objects.create(
+    customer = Customer.objects.create(
         user=user,
         zip_code=data.get('zip_code'),
         street=data.get('street'),
@@ -425,13 +442,13 @@ def register_address(request):
 
     return ok_response(
         data={
-            'zip_code': address.zip_code,
-            'street': address.street,
-            'number': address.number,
-            'complement': address.complement,
-            'neighborhood': address.neighborhood,
-            'city': address.city,
-            'state': address.state
+            'zip_code': Customer.zip_code,
+            'street': Customer.street,
+            'number': Customer.number,
+            'complement': Customer.complement,
+            'neighborhood': Customer.neighborhood,
+            'city': Customer.city,
+            'state': Customer.state
         },
         message="Endereço registrado com sucesso",
         status_code=status.HTTP_201_CREATED,
