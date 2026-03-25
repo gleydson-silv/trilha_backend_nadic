@@ -110,6 +110,10 @@ class ProfileCompletionSerializer(serializers.Serializer):
                 user.first_name = data.get("first_name", "")
             if "last_name" in data:
                 user.last_name = data.get("last_name", "")
+            try:
+                user.full_clean()
+            except DjangoValidationError as e:
+                raise serializers.ValidationError(e.message_dict)
             user.save()
 
             if user.role == User.Role.CUSTOMER:
