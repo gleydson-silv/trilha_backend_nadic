@@ -283,6 +283,10 @@ def update_profile(request):
         user.first_name = data.get('first_name', user.first_name)
         user.last_name  = data.get('last_name', user.last_name)
         user.email = data.get('email', user.email)
+        try:
+            user.full_clean()
+        except DjangoValidationError as e:
+            return error_response("Dados inválidos.", details=normalize_serializer_errors(e.message_dict))
         user.save()
         seller, _ = Seller.objects.get_or_create(user=user)
         seller.cnpj = data.get('cnpj', seller.cnpj)
@@ -298,6 +302,10 @@ def update_profile(request):
         user.first_name = data.get('first_name', user.first_name)
         user.last_name  = data.get('last_name', user.last_name)
         user.email = data.get('email', user.email)
+        try:
+            user.full_clean()
+        except DjangoValidationError as e:
+            return error_response("Dados inválidos.", details=normalize_serializer_errors(e.message_dict))
         user.save()
         customer, _ = Customer.objects.get_or_create(user=user)
         customer.cpf = data.get('cpf', customer.cpf)
@@ -333,6 +341,10 @@ def update_profile_partial(request):
             user.last_name  = data.get('last_name', user.last_name)
         if 'email' in data:
             user.email = data.get('email', user.email)
+        try:
+            user.full_clean()
+        except DjangoValidationError as e:
+            return error_response("Dados inválidos.", details=normalize_serializer_errors(e.message_dict))
         user.save()
         seller, _ = Seller.objects.get_or_create(user=user)
         if 'cnpj' in data:
@@ -354,6 +366,10 @@ def update_profile_partial(request):
             user.last_name  = data.get('last_name', user.last_name)
         if 'email' in data:
             user.email = data.get('email', user.email)
+        try:
+            user.full_clean()
+        except DjangoValidationError as e:
+            return error_response("Dados inválidos.", details=normalize_serializer_errors(e.message_dict))
         user.save()
         customer, _ = Customer.objects.get_or_create(user=user)
         if 'cpf' in data:
