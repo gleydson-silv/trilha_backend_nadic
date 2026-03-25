@@ -596,6 +596,12 @@ class ProductPagination(PageNumberPagination):
     max_page_size = 100
 
 
+class CategoryPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = "page_size"
+    max_page_size = 100
+
+
 @api_view(["GET", "POST"])
 @permission_classes([ProductAccessPermission])
 @ratelimit(key="user", rate="60/m", method="GET")
@@ -761,8 +767,11 @@ def categories_list_create(request):
 
     if request.method == "GET":
         queryset = Category.objects.all().order_by("name")
-        serializer = CategorySerializer(queryset, many=True)
-        return ok_response(data=serializer.data)
+        paginator = CategoryPagination()
+        page = paginator.paginate_queryset(queryset, request)
+        serializer = CategorySerializer(page, many=True)
+        paginated = paginator.get_paginated_response(serializer.data).data
+        return ok_response(data=paginated)
 
     serializer = CategorySerializer(data=request.data)
     if serializer.is_valid():
