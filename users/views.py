@@ -443,28 +443,31 @@ def register_address(request):
         )
     
     user = request.user
-    data = request.data
+    if user.role != User.Role.CUSTOMER:
+        return error_response("Apenas clientes podem cadastrar endereço.", status_code=status.HTTP_403_FORBIDDEN)
+    customer = getattr(user, "customer_profile", None)
+    if not customer:
+        return error_response("Perfil de cliente não encontrado", status_code=status.HTTP_404_NOT_FOUND)
 
-    customer = Customer.objects.create(
-        user=user,
+    data = request.data
+    address = Address.objects.create(
+        customer=customer,
         zip_code=data.get('zip_code'),
         street=data.get('street'),
         number=data.get('number'),
-        complement=data.get('complement'),
-        neighborhood=data.get('neighborhood'),
         city=data.get('city'),
-        state=data.get('state')
+        state=data.get('state'),
+        country=data.get('country'),
     )
 
     return ok_response(
         data={
-            'zip_code': Customer.zip_code,
-            'street': Customer.street,
-            'number': Customer.number,
-            'complement': Customer.complement,
-            'neighborhood': Customer.neighborhood,
-            'city': Customer.city,
-            'state': Customer.state
+            'zip_code': address.zip_code,
+            'street': address.street,
+            'number': address.number,
+            'city': address.city,
+            'state': address.state,
+            'country': address.country,
         },
         message="Endereço registrado com sucesso",
         status_code=status.HTTP_201_CREATED,
