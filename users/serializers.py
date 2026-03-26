@@ -25,11 +25,11 @@ class RegisterSerializer(serializers.ModelSerializer):
         if email:
             validated_data["email"] = User.objects.normalize_email(email)
         user = User(**validated_data)
+        user.set_password(password)
         try:
             user.full_clean()
         except DjangoValidationError as e:
             raise serializers.ValidationError(e.message_dict)
-        user.set_password(password)
         user.save()
 
         return user
