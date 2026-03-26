@@ -1,0 +1,139 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Loja{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'users/store.css' %}" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="container topbar__inner">
+          <div class="brand">
+            <span class="brand__logo"></span>
+            <span class="brand__name">Atelier</span>
+          </div>
+          <nav class="nav">
+            <a href="#">Novidades</a>
+            <a href="#">Coleções</a>
+            <a href="#">Acessórios</a>
+            <a href="#">Sobre</a>
+          </nav>
+          <div class="topbar__actions">
+            <button class="btn btn--ghost">Entrar</button>
+            <button class="btn">Comprar</button>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero">
+          <div class="container hero__inner">
+            <div class="hero__content">
+              <p class="eyebrow">Coleção 2026</p>
+              <h1>Essenciais desenhados para durar.</h1>
+              <p class="lead">
+                Minimalismo quente, materiais nobres e uma experiência de compra
+                silenciosa e elegante.
+              </p>
+              <div class="hero__actions">
+                <button class="btn">Explorar coleção</button>
+                <button class="btn btn--ghost">Ver lookbook</button>
+              </div>
+            </div>
+            <div class="hero__media">
+              <div class="hero__image"></div>
+              <div class="hero__card">
+                <span>Novo</span>
+                <strong>Bolsa Sienna</strong>
+                <small>Couro natural</small>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="container">
+            <div class="section__head">
+              <h2>Novidades</h2>
+              <a href="#" class="link">Ver tudo</a>
+            </div>
+            <div class="grid">
+              {% for product in products %}
+              <article class="card">
+                <div class="card__image"></div>
+                <h3>{{ product.name }}</h3>
+                <p>{{ product.description }}</p>
+                <span class="price">R$ {{ product.price }}</span>
+              </article>
+              {% empty %}
+              <p class="muted">Nenhum produto cadastrado ainda.</p>
+              {% endfor %}
+            </div>
+          </div>
+        </section>
+
+        <section class="editorial">
+          <div class="container editorial__inner">
+            <div class="editorial__image"></div>
+            <div class="editorial__content">
+              <p class="eyebrow">Manifesto</p>
+              <h2>Design silencioso. Impacto real.</h2>
+              <p>
+                Criamos peças que atravessam estações e tendências, com
+                responsabilidade e estética atemporal.
+              </p>
+              <button class="btn btn--ghost">Conheça nossa história</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="section section--muted">
+          <div class="container">
+            <div class="section__head">
+              <h2>Coleções</h2>
+              <p class="muted">Curadoria de peças essenciais para todos os dias.</p>
+            </div>
+            <div class="collection">
+              <div class="collection__card">
+                <h3>Essentials</h3>
+                <p>Minimalismo funcional</p>
+              </div>
+              <div class="collection__card">
+                <h3>Atelier</h3>
+                <p>Detalhes artesanais</p>
+              </div>
+              <div class="collection__card">
+                <h3>Studio</h3>
+                <p>Peças com textura</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <div class="container footer__inner">
+          <div>
+            <strong>Atelier</strong>
+            <p class="muted">Design atemporal para uma vida moderna.</p>
+          </div>
+          <div class="footer__links">
+            <a href="#">Suporte</a>
+            <a href="#">Entregas</a>
+            <a href="#">Trocas</a>
+            <a href="#">Contato</a>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>
