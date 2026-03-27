@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views
+from . import views,frontend_views
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -25,4 +25,5 @@ urlpatterns = [
     path('categories/', views.categories_list_create, name='categories_list_create'),
     path('categories/<int:category_id>/', views.category_detail_update_delete, name='category_detail_update_delete'),
     path('reports/revenue/', views.company_revenue, name='company_revenue'),
+    path('app/register/',frontend_views.app_register, name='app_register'),
 ]
