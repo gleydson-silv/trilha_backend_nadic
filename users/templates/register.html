@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Criar conta{% endblock %}
+
+{% block nav %}{% endblock %}
+{% block header_actions %}{% endblock %}
+
+{% block content %}
+<section class="auth-neo">
+  <div class="auth-neo__bg"></div>
+  <div class="container auth-neo__grid">
+    <aside class="auth-neo__aside">
+      <div class="auth-neo__brand">
+        <span class="auth-neo__badge"></span>
+        <span>Atelier CRM</span>
+      </div>
+
+      <h1>Organize, venda e cresça com precisão.</h1>
+      <p class="auth-neo__lead">
+        Um painel elegante para controlar estoque, catálogo e faturamento com clareza.
+        Tudo pronto para você em minutos.
+      </p>
+
+      <div class="auth-neo__highlights">
+        <div class="auth-neo__chip">Configuração em 3 minutos</div>
+        <div class="auth-neo__chip">Segurança nível empresarial</div>
+        <div class="auth-neo__chip">Insights em tempo real</div>
+      </div>
+
+      <div class="auth-neo__stats">
+        <div>
+          <strong>+2.400</strong>
+          <span>lojas ativas</span>
+        </div>
+        <div>
+          <strong>98%</strong>
+          <span>satisfação</span>
+        </div>
+        <div>
+          <strong>24/7</strong>
+          <span>suporte humano</span>
+        </div>
+      </div>
+
+      <div class="auth-neo__quote">
+        <p>“O CRM mudou nossa operação. Hoje temos uma visão clara de cada venda.”</p>
+        <span>Renata Lima, Diretora de Operações</span>
+      </div>
+    </aside>
+
+    <div class="auth-neo__card">
+      <div class="auth-neo__head">
+        <p class="auth-neo__eyebrow">Criar conta</p>
+        <h2>Comece gratuitamente</h2>
+        <p class="auth-neo__sub">Leva menos de 2 minutos. Sem cartão de crédito.</p>
+      </div>
+
+      <form class="auth-neo__form" data-endpoint="/register/" data-method="POST" data-redirect="/app/login/">
+        <label class="auth-neo__field" for="register-email">
+          E-mail
+          <input id="register-email" type="email" name="email" placeholder="voce@email.com" required />
+        </label>
+
+        <label class="auth-neo__field" for="register-password">
+          Senha
+          <input id="register-password" type="password" name="password" placeholder="Crie uma senha forte" required />
+          <span class="auth-neo__hint">Use 8+ caracteres, incluindo letras e números.</span>
+        </label>
+
+        <label class="auth-neo__check">
+          <input type="checkbox" required />
+          <span>Concordo com os Termos e a Política de Privacidade.</span>
+        </label>
+
+        <button class="auth-neo__submit" type="submit">Criar minha conta</button>
+      </form>
+
+      <div class="auth-neo__footer">
+        <span>Já tem conta?</span>
+        <a href="/app/login/">Entrar</a>
+      </div>
+      <div class="result" data-result></div>
+
+      <div class="auth-neo__trust">
+        <div>
+          <span class="auth-neo__trust-title">SSL 256-bit</span>
+          <span class="auth-neo__trust-sub">Proteção ponta a ponta</span>
+        </div>
+        <div>
+          <span class="auth-neo__trust-title">LGPD Ready</span>
+          <span class="auth-neo__trust-sub">Conformidade total</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
