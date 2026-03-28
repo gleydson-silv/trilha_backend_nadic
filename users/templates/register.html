@@ -12,7 +12,7 @@
     <aside class="auth-neo__aside">
       <div class="auth-neo__brand">
         <span class="auth-neo__badge"></span>
-        <span>Atelier CRM</span>
+        <span>FlowCRM</span>
       </div>
 
       <h1>Organize, venda e cresça com precisão.</h1>
@@ -59,6 +59,15 @@
         <label class="auth-neo__field" for="register-email">
           E-mail
           <input id="register-email" type="email" name="email" placeholder="voce@email.com" required />
+        </label>
+
+        <label class="auth-neo__field" for="register-user-type">
+          Tipo de usuário
+          <select id="register-user-type" name="user_type" required>
+            <option value="" disabled selected>Selecione uma opção</option>
+            <option value="vendedor">Vendedor</option>
+            <option value="cliente">Cliente</option>
+          </select>
         </label>
 
         <label class="auth-neo__field" for="register-password">
