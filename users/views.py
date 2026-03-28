@@ -103,7 +103,7 @@ def login(request):
 
 
 def home(request):
-    return redirect("register")
+    return redirect("app_register")
 
 
 @api_view(['PATCH'])

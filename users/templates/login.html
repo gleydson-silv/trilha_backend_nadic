@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block nav %}{% endblock %}
+{% block header_actions %}{% endblock %}
+
+{% block content %}
+<section class="auth-neo">
+  <div class="auth-neo__bg"></div>
+  <div class="container auth-neo__grid">
+    <aside class="auth-neo__aside">
+      <div class="auth-neo__brand">
+        <span class="auth-neo__badge"></span>
+        <span>Flow CRM</span>
+      </div>
+
+      <h1>Bem-vindo de volta.</h1>
+      <p class="auth-neo__lead">
+        Acesse sua operação com segurança e retome o controle do seu estoque,
+        catálogo e vendas em tempo real.
+      </p>
+
+      <div class="auth-neo__highlights">
+        <div class="auth-neo__chip">Painel inteligente</div>
+        <div class="auth-neo__chip">Relatórios precisos</div>
+        <div class="auth-neo__chip">Equipe alinhada</div>
+      </div>
+
+      <div class="auth-neo__quote">
+        <p>“Entrar no CRM já virou parte da rotina da equipe. Tudo centralizado.”</p>
+        <span>Mariana Alves, Gestora Comercial</span>
+      </div>
+    </aside>
+
+    <div class="auth-neo__card">
+      <div class="auth-neo__head">
+        <p class="auth-neo__eyebrow">Acessar conta</p>
+        <h2>Entrar</h2>
+        <p class="auth-neo__sub">Use seu e-mail e senha para continuar.</p>
+      </div>
+
+      <form class="auth-neo__form" data-endpoint="/login/" data-method="POST" data-auth="false" data-redirect="/app/profile/">
+        <label class="auth-neo__field" for="login-email">
+          E-mail
+          <input id="login-email" type="email" name="email" placeholder="voce@email.com" required />
+        </label>
+
+        <label class="auth-neo__field" for="login-password">
+          Senha
+          <input id="login-password" type="password" name="password" placeholder="Sua senha" required />
+        </label>
+
+        <div class="auth-neo__footer auth-neo__footer--split">
+          <label class="auth-neo__check auth-neo__check--inline">
+            <input type="checkbox" />
+            <span>Manter conectado</span>
+          </label>
+          <a href="/app/forgot-password/">Esqueci minha senha</a>
+        </div>
+
+        <button class="auth-neo__submit" type="submit">Entrar</button>
+      </form>
+
+      <a class="auth-neo__ghost" href="/accounts/google/login/">Entrar com Google</a>
+      <div class="result" data-result></div>
+
+      <div class="auth-neo__footer">
+        <span>Não tem conta?</span>
+        <a href="/register/">Criar agora</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

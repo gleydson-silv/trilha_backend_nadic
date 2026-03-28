@@ -5,3 +5,8 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 @ensure_csrf_cookie
 def app_register(request):
     return render(request, "register.html")
+
+
+@ensure_csrf_cookie
+def app_login(request):
+    return render(request, "login.html")
