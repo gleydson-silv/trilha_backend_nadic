@@ -10,3 +10,8 @@ def app_register(request):
 @ensure_csrf_cookie
 def app_login(request):
     return render(request, "login.html")
+
+
+@ensure_csrf_cookie
+def app_forgot_password(request):
+    return render(request, "forgot-password.html")
