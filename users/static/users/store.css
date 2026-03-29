@@ -705,6 +705,22 @@ body {
   font-weight: 600;
 }
 
+.auth-neo__footer--split a {
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  background: rgba(37, 99, 235, 0.06);
+  color: #1d4ed8;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.auth-neo__footer--split a:hover {
+  transform: translateY(-1px);
+  background: rgba(37, 99, 235, 0.12);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.18);
+}
+
 .auth-neo__ghost {
   display: grid;
   place-items: center;
@@ -712,22 +728,49 @@ body {
   padding: 12px 16px;
   border-radius: 12px;
   border: 1px solid rgba(15, 23, 42, 0.12);
-  color: #1f2937;
+  color: #111827;
   text-decoration: none;
   font-weight: 600;
-  background: #fff;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
 }
 
 .auth-neo__ghost:hover {
   transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.14);
 }
 
 .auth-neo__check--inline {
   grid-template-columns: 16px 1fr;
   font-size: 0.85rem;
   color: #475569;
+}
+
+.auth-neo__ghost::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background:
+    conic-gradient(from 0deg, #ea4335 0deg 90deg, #fbbc05 90deg 180deg, #34a853 180deg 270deg, #4285f4 270deg 360deg);
+  box-shadow: inset 0 0 0 2px #fff;
+  display: inline-block;
+}
+
+.auth-neo__ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  text-align: center;
+}
+
+.auth-neo__ghost:focus-visible,
+.auth-neo__footer--split a:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
 }
 
 .auth-neo__trust {
