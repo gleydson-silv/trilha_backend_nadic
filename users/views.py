@@ -102,10 +102,6 @@ def login(request):
     )
 
 
-def home(request):
-    return redirect("app_register")
-
-
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 @ratelimit(key='user', rate='5/m', method='PATCH')
