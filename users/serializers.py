@@ -31,7 +31,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         except DjangoValidationError as e:
             raise serializers.ValidationError(e.message_dict)
         user.save()
-
         return user
 
     def validate(self, attrs):

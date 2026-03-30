@@ -35,7 +35,8 @@
         <p class="auth-neo__sub">Use seu e-mail e senha para continuar.</p>
       </div>
 
-      <form class="auth-neo__form" data-endpoint="/login/" data-method="POST" data-auth="false" data-redirect="/app/profile/">
+      <form class="auth-neo__form" method="POST" action="/login/" data-endpoint="/login/" data-method="POST" data-auth="false" data-redirect="/app/profile/">
+        {% csrf_token %}
         <label class="auth-neo__field" for="login-email">
           E-mail
           <input id="login-email" type="email" name="email" placeholder="voce@email.com" required />

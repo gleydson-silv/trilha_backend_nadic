@@ -15,3 +15,8 @@ def app_login(request):
 @ensure_csrf_cookie
 def app_forgot_password(request):
     return render(request, "forgot-password.html")
+
+
+@ensure_csrf_cookie
+def app_complete_profile(request):
+    return render(request, "complete-profile.html")

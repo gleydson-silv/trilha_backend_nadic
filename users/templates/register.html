@@ -49,7 +49,8 @@
         <h2>Comece gratuitamente</h2>
       </div>
 
-      <form class="auth-neo__form" data-endpoint="/register/" data-method="POST" data-redirect="/app/login/">
+      <form class="auth-neo__form" data-endpoint="/register/" data-method="POST" data-redirect="/app/profile/complete/">
+        {% csrf_token %}
         <label class="auth-neo__field" for="register-email">
           E-mail
           <input id="register-email" type="email" name="email" placeholder="voce@email.com" required />
