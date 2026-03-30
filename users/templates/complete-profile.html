@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Completar perfil{% endblock %}
+
+{% block nav %}{% endblock %}
+{% block header_actions %}{% endblock %}
+
+{% block content %}
+<section class="auth-neo">
+  <div class="auth-neo__bg"></div>
+  <div class="container auth-neo__grid">
+    <aside class="auth-neo__aside">
+      <div class="auth-neo__brand">
+        <span class="auth-neo__badge"></span>
+        <span>FlowCRM</span>
+      </div>
+
+      <h1>Finalize seu cadastro com segurança.</h1>
+      <p class="auth-neo__lead">
+        Precisamos de alguns dados para personalizar sua experiência e liberar o painel.
+        É rápido e você pode editar depois.
+      </p>
+
+      <div class="auth-neo__highlights">
+        <div class="auth-neo__chip">Dados criptografados</div>
+        <div class="auth-neo__chip">Suporte humano dedicado</div>
+        <div class="auth-neo__chip">Configuração guiada</div>
+      </div>
+
+      <div class="auth-neo__stats">
+        <div>
+          <strong>4 min</strong>
+          <span>tempo médio</span>
+        </div>
+        <div>
+          <strong>100%</strong>
+          <span>processo online</span>
+        </div>
+        <div>
+          <strong>LGPD</strong>
+          <span>conformidade</span>
+        </div>
+      </div>
+    </aside>
+
+    <div class="auth-neo__card">
+      <div class="auth-neo__head">
+        <p class="auth-neo__eyebrow">Completar perfil</p>
+        <h2>Conte um pouco sobre você</h2>
+      </div>
+
+      <form
+        class="auth-neo__form"
+        data-endpoint="/profile/complete/"
+        data-method="PATCH"
+        data-redirect="/app/login/"
+      >
+        {% csrf_token %}
+        <label class="auth-neo__field" for="complete-first-name">
+          Nome
+          <input id="complete-first-name" type="text" name="first_name" placeholder="Seu nome" required />
+        </label>
+
+        <label class="auth-neo__field" for="complete-last-name">
+          Sobrenome
+          <input id="complete-last-name" type="text" name="last_name" placeholder="Seu sobrenome" required />
+        </label>
+
+        <label class="auth-neo__field" for="complete-phone">
+          Telefone
+          <input id="complete-phone" type="tel" name="phone_number" placeholder="(11) 99999-0000" required />
+        </label>
+
+        <label class="auth-neo__field" for="complete-cpf">
+          CPF (cliente)
+          <input id="complete-cpf" type="text" name="cpf" placeholder="000.000.000-00" />
+        </label>
+
+        <label class="auth-neo__field" for="complete-company-name">
+          Razão social (vendedor)
+          <input id="complete-company-name" type="text" name="company_name" placeholder="Sua empresa" />
+        </label>
+
+        <label class="auth-neo__field" for="complete-cnpj">
+          CNPJ (vendedor)
+          <input id="complete-cnpj" type="text" name="cnpj" placeholder="00.000.000/0000-00" />
+        </label>
+
+        <button class="auth-neo__submit" type="submit">Salvar e continuar</button>
+      </form>
+
+      <div class="auth-neo__footer">
+        <span>Já completou?</span>
+        <a href="/app/login/">Ir para login</a>
+      </div>
+      <div class="result" data-result></div>
+    </div>
+  </div>
+</section>
+{% endblock %}
