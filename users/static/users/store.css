@@ -545,24 +545,6 @@ body {
   font-size: 0.85rem;
 }
 
-.auth-neo__quote {
-  padding: 18px 20px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.75);
-  border: 1px solid rgba(15, 23, 42, 0.1);
-  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
-}
-
-.auth-neo__quote p {
-  margin: 0 0 8px;
-  font-size: 0.95rem;
-}
-
-.auth-neo__quote span {
-  color: #64748b;
-  font-size: 0.85rem;
-}
-
 .auth-neo__card {
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid rgba(15, 23, 42, 0.08);
@@ -585,11 +567,6 @@ body {
   margin: 0;
 }
 
-.auth-neo__sub {
-  margin: 0 0 18px;
-  color: #6b7280;
-  font-size: 0.95rem;
-}
 
 .auth-neo__form {
   display: grid;
