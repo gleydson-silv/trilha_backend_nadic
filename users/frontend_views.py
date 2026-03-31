@@ -21,7 +21,3 @@ def app_forgot_password(request):
 def app_complete_profile(request):
     return render(request, "complete-profile.html")
 
-
-@ensure_csrf_cookie
-def app_google_login(request):
-    return render(request, "google-login.html")
