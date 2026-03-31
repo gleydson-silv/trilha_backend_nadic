@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'users',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
@@ -46,7 +47,6 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
-    'django.contrib.sites',
 ]
 
 AUTH_USER_MODEL = 'users.User'
@@ -160,6 +160,8 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = "none"
 SOCIALACCOUNT_QUERY_EMAIL = True
 
+SITE_ID = 3
+
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "SCOPE": ["profile", "email"],
@@ -167,7 +169,7 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-LOGIN_REDIRECT_URL = "/app/profile/"
+LOGIN_REDIRECT_URL = "/app/store/"
 LOGOUT_REDIRECT_URL = "/login/"
 
 # Optional Google OAuth credentials (if configured via settings instead of SocialApp model)
@@ -179,5 +181,3 @@ if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
         "secret": GOOGLE_CLIENT_SECRET,
         "key": "",
     }
-
-SITE_ID = 1
