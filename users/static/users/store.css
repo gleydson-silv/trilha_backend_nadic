@@ -643,6 +643,7 @@ body {
 }
 
 .auth-neo__submit {
+  text-decoration: none;
   width: 100%;
   padding: 14px 18px;
   border-radius: 12px;
@@ -670,7 +671,7 @@ body {
 }
 
 .auth-neo__footer--split {
-  margin-top: 0;
+  margin-top: 25px;;
   justify-content: space-between;
   align-items: center;
   font-size: 0.85rem;

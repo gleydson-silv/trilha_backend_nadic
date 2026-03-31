@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Login com Google{% endblock %}
+
+{% block nav %}{% endblock %}
+{% block header_actions %}{% endblock %}
+
+{% block content %}
+<section class="auth-neo">
+  <div class="auth-neo__bg"></div>
+  <div class="container auth-neo__grid">
+    <aside class="auth-neo__aside">
+      <div class="auth-neo__brand">
+        <span class="auth-neo__badge"></span>
+        <span>FlowCRM</span>
+      </div>
+
+      <h1>Entre em segundos com Google.</h1>
+      <p class="auth-neo__lead">
+        Autenticação segura, sem senha e com acesso imediato ao painel.
+      </p>
+
+      <div class="auth-neo__highlights">
+        <div class="auth-neo__chip">Login 1 clique</div>
+        <div class="auth-neo__chip">Dados protegidos</div>
+        <div class="auth-neo__chip">Conta sincronizada</div>
+      </div>
+
+      <div class="auth-neo__stats">
+        <div>
+          <strong>2 min</strong>
+          <span>ativação média</span>
+        </div>
+        <div>
+          <strong>100%</strong>
+          <span>processo online</span>
+        </div>
+        <div>
+          <strong>LGPD</strong>
+          <span>conformidade</span>
+        </div>
+      </div>
+    </aside>
+
+    <div class="auth-neo__card">
+      <div class="auth-neo__head">
+        <p class="auth-neo__eyebrow">Login social</p>
+        <h2>Continue com Google</h2>
+        <p class="auth-neo__sub">Use sua conta Google para acessar o FlowCRM.</p>
+      </div>
+
+      <a class="auth-neo__submit" href="/accounts/google/login/">Entrar com Google</a>
+
+      <div class="auth-neo__footer auth-neo__footer--split">
+        <a href="/app/login/">Voltar para login</a>
+        <a href="/app/register/">Criar conta</a>
+      </div>
+
+      <div class="result" data-result></div>
+    </div>
+  </div>
+</section>
+{% endblock %}
