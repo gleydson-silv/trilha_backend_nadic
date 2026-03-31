@@ -1,0 +1,25 @@
+{% extends 'socialaccount/base_entrance.html' %}
+{% load i18n %}
+
+{% block head_title %}
+  {% if process == "connect" %}
+    {% blocktrans with provider.name as provider %}Conectar {{ provider }}{% endblocktrans %}
+  {% else %}
+    {% blocktrans with provider.name as provider %}Entrar via {{ provider }}{% endblocktrans %}
+  {% endif %}
+{% endblock %}
+
+{% block entrance_content %}
+  {% if process == "connect" %}
+    <h2>Conectar com {{ provider.name }}</h2>
+    <p class="auth-neo__sub">Confirme para vincular sua conta.</p>
+  {% else %}
+    <h2>Entrar com {{ provider.name }}</h2>
+    <p class="auth-neo__sub">Você será redirecionado para autenticar.</p>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    <button class="auth-neo__submit" type="submit">{% trans "Continuar" %}</button>
+  </form>
+{% endblock %}
