@@ -62,12 +62,15 @@ def _consume_pending_role(request, user):
     if not user.is_authenticated:
         return
 
-    if user.role != User.Role.USER:
-        request.session.pop("pending_role", None)
+    pending_role = request.session.pop("pending_role", None)
+    if pending_role not in (User.Role.CUSTOMER, User.Role.SELLER):
         return
 
-    pending_role = request.session.pop("pending_role", None)
-    if pending_role in (User.Role.CUSTOMER, User.Role.SELLER):
+    has_customer = hasattr(user, "customer_profile")
+    has_seller = hasattr(user, "seller_profile")
+    has_profile = has_customer or has_seller
+
+    if user.role == User.Role.USER or (not has_profile and user.role != pending_role):
         user.role = pending_role
         user.save()
 
@@ -95,6 +98,16 @@ def app_store(request):
 def app_google_login(request, role):
     if role not in (User.Role.CUSTOMER, User.Role.SELLER):
         return redirect("/app/login/")
+    user = request.user
+    if user.is_authenticated:
+        has_customer = hasattr(user, "customer_profile")
+        has_seller = hasattr(user, "seller_profile")
+        has_profile = has_customer or has_seller
+        if user.role == User.Role.USER or (not has_profile and user.role != role):
+            user.role = role
+            user.save()
+        return redirect("/app/store/")
+
     request.session["pending_role"] = role
     return redirect("/accounts/google/login/?next=/app/store/")
 
