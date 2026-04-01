@@ -19,48 +19,6 @@ phone_format_validator = RegexValidator(
 
 def _only_digits(value: str) -> str:
     return "".join(ch for ch in value if ch.isdigit())
-
-
-def validate_cpf(value: str) -> None:
-    digits = _only_digits(value or "")
-    if len(digits) != 11:
-        raise ValidationError("CPF inválido")
-    if digits == digits[0] * 11:
-        raise ValidationError("CPF inválido")
-
-    total = sum(int(digits[i]) * (10 - i) for i in range(9))
-    check_1 = (total * 10) % 11
-    check_1 = 0 if check_1 == 10 else check_1
-    if check_1 != int(digits[9]):
-        raise ValidationError("CPF inválido")
-
-    total = sum(int(digits[i]) * (11 - i) for i in range(10))
-    check_2 = (total * 10) % 11
-    check_2 = 0 if check_2 == 10 else check_2
-    if check_2 != int(digits[10]):
-        raise ValidationError("CPF inválido")
-
-
-def validate_cnpj(value: str) -> None:
-    digits = _only_digits(value or "")
-    if len(digits) != 14:
-        raise ValidationError("CNPJ inválido")
-    if digits == digits[0] * 14:
-        raise ValidationError("CNPJ inválido")
-
-    weights_1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
-    total = sum(int(digits[i]) * weights_1[i] for i in range(12))
-    mod = total % 11
-    check_1 = 0 if mod < 2 else 11 - mod
-    if check_1 != int(digits[12]):
-        raise ValidationError("CNPJ inválido")
-
-    weights_2 = [6] + weights_1
-    total = sum(int(digits[i]) * weights_2[i] for i in range(13))
-    mod = total % 11
-    check_2 = 0 if mod < 2 else 11 - mod
-    if check_2 != int(digits[13]):
-        raise ValidationError("CNPJ inválido")
     
 
 def validate_cep(value: str) -> None:
