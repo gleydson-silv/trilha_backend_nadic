@@ -18,11 +18,6 @@ def app_forgot_password(request):
     return render(request, "forgot-password.html")
 
 
-@ensure_csrf_cookie
-def app_complete_profile(request):
-    return render(request, "complete-profile.html")
-
-
 def _has_value(value):
     return bool(str(value).strip()) if value is not None else False
 
@@ -63,11 +58,27 @@ def _profile_is_complete(user):
     return False
 
 
+def _consume_pending_role(request, user):
+    if not user.is_authenticated:
+        return
+
+    if user.role != User.Role.USER:
+        request.session.pop("pending_role", None)
+        return
+
+    pending_role = request.session.pop("pending_role", None)
+    if pending_role in (User.Role.CUSTOMER, User.Role.SELLER):
+        user.role = pending_role
+        user.save()
+
+
 @ensure_csrf_cookie
 def app_store(request):
     user = request.user
     if not user.is_authenticated:
         return redirect("/app/login/")
+
+    _consume_pending_role(request, user)
 
     if not _profile_is_complete(user):
         role = user.role if user.role else ""
@@ -78,3 +89,19 @@ def app_store(request):
 
     products = Product.objects.all()
     return render(request, "store.html", {"products": products})
+
+
+@ensure_csrf_cookie
+def app_google_login(request, role):
+    if role not in (User.Role.CUSTOMER, User.Role.SELLER):
+        return redirect("/app/login/")
+    request.session["pending_role"] = role
+    return redirect("/accounts/google/login/?next=/app/store/")
+
+
+@ensure_csrf_cookie
+def app_complete_profile(request):
+    user = request.user
+    if user.is_authenticated:
+        _consume_pending_role(request, user)
+    return render(request, "complete-profile.html")
