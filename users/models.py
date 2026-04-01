@@ -5,8 +5,6 @@ from .validators import (
     cpf_format_validator,
     cnpj_format_validator,
     phone_format_validator,
-    validate_cpf,
-    validate_cnpj,
 )
 
 class UserManager(BaseUserManager):
@@ -57,7 +55,7 @@ class Customer(models.Model):
         unique=True,
         null=False,
         blank=False,
-        validators=[cpf_format_validator, validate_cpf],
+        validators=[cpf_format_validator],
     )
     phone_number = models.CharField(
         max_length=20,
@@ -81,7 +79,7 @@ class Seller(models.Model):
         unique=True,
         null=False,
         blank=False,
-        validators=[cnpj_format_validator, validate_cnpj],
+        validators=[cnpj_format_validator],
     )
     phone_number = models.CharField(
         max_length=20,

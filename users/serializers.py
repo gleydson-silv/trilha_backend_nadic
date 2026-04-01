@@ -5,6 +5,31 @@ from rest_framework.settings import api_settings
 from .models import User, Customer, Seller, Product, Category
 
 
+def _only_digits(value: str) -> str:
+    return "".join(ch for ch in (value or "") if ch.isdigit())
+
+
+def _format_phone(value: str) -> str:
+    digits = _only_digits(value)
+    if len(digits) != 11:
+        return value
+    return f"{digits[:2]}-{digits[2:]}"
+
+
+def _format_cpf(value: str) -> str:
+    digits = _only_digits(value)
+    if len(digits) != 11:
+        return value
+    return f"{digits[:3]}.{digits[3:6]}.{digits[6:9]}-{digits[9:]}"
+
+
+def _format_cnpj(value: str) -> str:
+    digits = _only_digits(value)
+    if len(digits) != 14:
+        return value
+    return f"{digits[:2]}.{digits[2:5]}.{digits[5:8]}/{digits[8:12]}-{digits[12:]}"
+
+
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -53,6 +78,12 @@ class ProfileCompletionSerializer(serializers.Serializer):
     def validate(self, attrs):
         user = self.context["request"].user
         role = user.role
+        if "phone_number" in attrs and attrs.get("phone_number"):
+            attrs["phone_number"] = _format_phone(attrs.get("phone_number"))
+        if "cpf" in attrs and attrs.get("cpf"):
+            attrs["cpf"] = _format_cpf(attrs.get("cpf"))
+        if "cnpj" in attrs and attrs.get("cnpj"):
+            attrs["cnpj"] = _format_cnpj(attrs.get("cnpj"))
 
         if role == User.Role.CUSTOMER:
             customer = Customer.objects.filter(user=user).first()
