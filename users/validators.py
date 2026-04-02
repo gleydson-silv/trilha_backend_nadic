@@ -19,6 +19,27 @@ phone_format_validator = RegexValidator(
 
 def _only_digits(value: str) -> str:
     return "".join(ch for ch in value if ch.isdigit())
+
+
+def format_phone(value: str) -> str:
+    digits = _only_digits(value or "")
+    if len(digits) != 11:
+        return value
+    return f"{digits[:2]}-{digits[2:]}"
+
+
+def format_cpf(value: str) -> str:
+    digits = _only_digits(value or "")
+    if len(digits) != 11:
+        return value
+    return f"{digits[:3]}.{digits[3:6]}.{digits[6:9]}-{digits[9:]}"
+
+
+def format_cnpj(value: str) -> str:
+    digits = _only_digits(value or "")
+    if len(digits) != 14:
+        return value
+    return f"{digits[:2]}.{digits[2:5]}.{digits[5:8]}/{digits[8:12]}-{digits[12:]}"
     
 
 def validate_cep(value: str) -> None:
