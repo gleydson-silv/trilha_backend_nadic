@@ -31,6 +31,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 import requests
 from .models import Address
 import pyotp
+from .validators import format_phone, format_cpf, format_cnpj
 
 
 def ok_response(data=None, message=None, status_code=status.HTTP_200_OK):
@@ -280,6 +281,13 @@ def update_profile(request):
     data = request.data
 
     if user.role == 'seller':
+        phone_value = data.get('phone_number')
+        cnpj_value = data.get('cnpj')
+        if phone_value is not None:
+            phone_value = format_phone(phone_value)
+        if cnpj_value is not None:
+            cnpj_value = format_cnpj(cnpj_value)
+
         user.first_name = data.get('first_name', user.first_name)
         user.last_name  = data.get('last_name', user.last_name)
         user.email = data.get('email', user.email)
@@ -289,9 +297,11 @@ def update_profile(request):
             return error_response("Dados inválidos.", details=normalize_serializer_errors(e.message_dict))
         user.save()
         seller, _ = Seller.objects.get_or_create(user=user)
-        seller.cnpj = data.get('cnpj', seller.cnpj)
+        if cnpj_value is not None:
+            seller.cnpj = cnpj_value
         seller.company_name = data.get('company_name', seller.company_name)
-        seller.phone_number = data.get('phone_number', seller.phone_number)
+        if phone_value is not None:
+            seller.phone_number = phone_value
         try:
             seller.full_clean()
         except DjangoValidationError as e:
@@ -299,6 +309,13 @@ def update_profile(request):
         seller.save()
         return ok_response(data=_seller_payload(user, seller))
     if user.role == 'customer':
+        phone_value = data.get('phone_number')
+        cpf_value = data.get('cpf')
+        if phone_value is not None:
+            phone_value = format_phone(phone_value)
+        if cpf_value is not None:
+            cpf_value = format_cpf(cpf_value)
+
         user.first_name = data.get('first_name', user.first_name)
         user.last_name  = data.get('last_name', user.last_name)
         user.email = data.get('email', user.email)
@@ -308,8 +325,10 @@ def update_profile(request):
             return error_response("Dados inválidos.", details=normalize_serializer_errors(e.message_dict))
         user.save()
         customer, _ = Customer.objects.get_or_create(user=user)
-        customer.cpf = data.get('cpf', customer.cpf)
-        customer.phone_number = data.get('phone_number', customer.phone_number)
+        if cpf_value is not None:
+            customer.cpf = cpf_value
+        if phone_value is not None:
+            customer.phone_number = phone_value
         customer.first_name = user.first_name
         customer.last_name = user.last_name
         try:
@@ -335,6 +354,13 @@ def update_profile_partial(request):
     data = request.data
 
     if user.role == 'seller':
+        phone_value = data.get('phone_number')
+        cnpj_value = data.get('cnpj')
+        if phone_value is not None:
+            phone_value = format_phone(phone_value)
+        if cnpj_value is not None:
+            cnpj_value = format_cnpj(cnpj_value)
+
         if 'first_name' in data:
             user.first_name = data.get('first_name', user.first_name)
         if 'last_name' in data:
@@ -348,11 +374,11 @@ def update_profile_partial(request):
         user.save()
         seller, _ = Seller.objects.get_or_create(user=user)
         if 'cnpj' in data:
-            seller.cnpj = data.get('cnpj', seller.cnpj)
+            seller.cnpj = cnpj_value
         if 'company_name' in data:
             seller.company_name = data.get('company_name', seller.company_name)
         if 'phone_number' in data:
-            seller.phone_number = data.get('phone_number', seller.phone_number)
+            seller.phone_number = phone_value
         try:
             seller.full_clean()
         except DjangoValidationError as e:
@@ -360,6 +386,13 @@ def update_profile_partial(request):
         seller.save()
         return ok_response(data=_seller_payload(user, seller))
     if user.role == 'customer':
+        phone_value = data.get('phone_number')
+        cpf_value = data.get('cpf')
+        if phone_value is not None:
+            phone_value = format_phone(phone_value)
+        if cpf_value is not None:
+            cpf_value = format_cpf(cpf_value)
+
         if 'first_name' in data:
             user.first_name = data.get('first_name', user.first_name)
         if 'last_name' in data:
@@ -373,9 +406,9 @@ def update_profile_partial(request):
         user.save()
         customer, _ = Customer.objects.get_or_create(user=user)
         if 'cpf' in data:
-            customer.cpf = data.get('cpf', customer.cpf)
+            customer.cpf = cpf_value
         if 'phone_number' in data:
-            customer.phone_number = data.get('phone_number', customer.phone_number)
+            customer.phone_number = phone_value
         customer.first_name = user.first_name
         customer.last_name = user.last_name
         try:
