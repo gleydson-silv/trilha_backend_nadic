@@ -54,6 +54,11 @@ class ProfileCompletionSerializer(serializers.Serializer):
     def validate(self, attrs):
         user = self.context["request"].user
         role = user.role
+        effective_role = role
+        for key in ("first_name", "last_name", "phone_number", "cpf", "company_name", "cnpj"):
+            if key in attrs and isinstance(attrs.get(key), str) and not attrs.get(key).strip():
+                attrs.pop(key, None)
+
         if "phone_number" in attrs and attrs.get("phone_number"):
             attrs["phone_number"] = format_phone(attrs.get("phone_number"))
         if "cpf" in attrs and attrs.get("cpf"):
@@ -61,7 +66,15 @@ class ProfileCompletionSerializer(serializers.Serializer):
         if "cnpj" in attrs and attrs.get("cnpj"):
             attrs["cnpj"] = format_cnpj(attrs.get("cnpj"))
 
-        if role == User.Role.CUSTOMER:
+        if role == User.Role.USER:
+            has_seller_signal = bool(attrs.get("company_name") or attrs.get("cnpj"))
+            has_customer_signal = bool(attrs.get("cpf"))
+            if has_seller_signal:
+                effective_role = User.Role.SELLER
+            elif has_customer_signal:
+                effective_role = User.Role.CUSTOMER
+
+        if effective_role == User.Role.CUSTOMER:
             customer = Customer.objects.filter(user=user).first()
             cpf = attrs.get("cpf")
             if cpf:
@@ -85,7 +98,7 @@ class ProfileCompletionSerializer(serializers.Serializer):
                     f"Para cliente, informe: {', '.join(missing)}."
                 )
 
-        if role == User.Role.SELLER:
+        if effective_role == User.Role.SELLER:
             seller = Seller.objects.filter(user=user).first()
             cnpj = attrs.get("cnpj")
             if cnpj:
@@ -109,13 +122,17 @@ class ProfileCompletionSerializer(serializers.Serializer):
                     f"Para vendedor, informe: {', '.join(missing)}."
                 )
 
+        attrs["_effective_role"] = effective_role
         return attrs
 
     def save(self, **kwargs):
         user = self.context["request"].user
         data = self.validated_data
+        effective_role = data.pop("_effective_role", user.role)
 
         with transaction.atomic():
+            if effective_role != user.role and effective_role in (User.Role.CUSTOMER, User.Role.SELLER):
+                user.role = effective_role
             if "first_name" in data:
                 user.first_name = data.get("first_name", "")
             if "last_name" in data:
