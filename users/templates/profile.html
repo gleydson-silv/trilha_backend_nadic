@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Minha conta{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="section__head">
+      <h2>Minha conta</h2>
+      <p class="muted">Confira seus dados cadastrados.</p>
+    </div>
+
+    <div class="card">
+      <div class="card__body">
+        <h3>Dados principais</h3>
+        <p><strong>Nome:</strong> {{ profile.name|default:"-" }}</p>
+        <p><strong>Email:</strong> {{ profile.email|default:"-" }}</p>
+        <p><strong>Perfil:</strong> {{ profile.role|default:"-" }}</p>
+
+        {% if profile.company_name %}
+          <p><strong>Razao social:</strong> {{ profile.company_name }}</p>
+          <p><strong>CNPJ:</strong> {{ profile.cnpj }}</p>
+          <p><strong>Telefone:</strong> {{ profile.phone_number }}</p>
+        {% elif profile.cpf %}
+          <p><strong>CPF:</strong> {{ profile.cpf }}</p>
+          <p><strong>Telefone:</strong> {{ profile.phone_number }}</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -118,3 +118,40 @@ def app_complete_profile(request):
     if user.is_authenticated:
         _consume_pending_role(request, user)
     return render(request, "complete-profile.html")
+
+
+@ensure_csrf_cookie
+def app_profile(request):
+    user = request.user
+    if not user.is_authenticated:
+        return redirect("/app/login/")
+
+    _consume_pending_role(request, user)
+
+    customer = getattr(user, "customer_profile", None)
+    seller = getattr(user, "seller_profile", None)
+    role = user.role
+
+    payload = {
+        "name": f"{user.first_name} {user.last_name}".strip(),
+        "email": user.email,
+        "role": role,
+    }
+
+    if seller:
+        payload.update(
+            {
+                "company_name": seller.company_name,
+                "cnpj": seller.cnpj,
+                "phone_number": seller.phone_number,
+            }
+        )
+    elif customer:
+        payload.update(
+            {
+                "cpf": customer.cpf,
+                "phone_number": customer.phone_number,
+            }
+        )
+
+    return render(request, "profile.html", {"profile": payload})

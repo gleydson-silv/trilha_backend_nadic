@@ -31,5 +31,6 @@ urlpatterns = [
     path('app/login/google/<str:role>/', frontend_views.app_google_login, name='app_google_login'),
     path('app/forgot-password/', frontend_views.app_forgot_password, name='app_forgot_password'),
     path('app/profile/complete/', frontend_views.app_complete_profile, name='app_complete_profile'),
+    path('app/profile/', frontend_views.app_profile, name='app_profile'),
     path('app/store/', frontend_views.app_store, name='app_store'),
 ]
