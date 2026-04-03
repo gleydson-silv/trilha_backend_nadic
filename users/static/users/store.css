@@ -62,7 +62,11 @@ body {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0f3d2e, #143d5b);
+  object-fit: cover;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  
 }
 
 .nav {

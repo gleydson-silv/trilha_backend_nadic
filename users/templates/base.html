@@ -2,6 +2,7 @@
 <!doctype html>
 <html lang="pt-br">
   <head>
+    <link rel="icon" type="image/png" href="{% static 'users/logo2.png' %}" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{% block title %}CRM{% endblock %}</title>
@@ -18,7 +19,7 @@
       <header class="topbar">
         <div class="container topbar__inner">
           <div class="brand">
-            <span class="brand__logo"></span>
+            <img class="brand__logo" src="{% static 'users/logo2.png' %}" alt="FlowCRM" />
             <strong class="brand__name">FlowCRM</strong>
           </div>
           <nav class="nav">
