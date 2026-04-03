@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Detalhes do perfil{% endblock %}
+
+{% block content %}
+<section class="profile-details">
+  <div class="container">
+    <div class="profile-details__header">
+      <a class="link" href="/app/profile/">Voltar</a>
+      <h1>Detalhes do perfil</h1>
+      <p class="muted">Aqui estao todas as informacões cadastradas.</p>
+    </div>
+
+    <div class="profile-details__grid">
+      <div class="profile-details__card">
+        <h3>Identificação</h3>
+        <div class="profile-details__row">
+          <span>Nome</span>
+          <strong>{{ profile.name|default:"-" }}</strong>
+        </div>
+        <div class="profile-details__row">
+          <span>Email</span>
+          <strong>{{ profile.email|default:"-" }}</strong>
+        </div>
+        <div class="profile-details__row">
+          <span>Perfil</span>
+          <strong>{{ profile.role|default:"-" }}</strong>
+        </div>
+        {% if profile.cpf %}
+        <div class="profile-details__row">
+          <span>CPF</span>
+          <strong>{{ profile.cpf }}</strong>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="profile-details__card">
+        <h3>Contato</h3>
+        <div class="profile-details__row">
+          <span>Telefone</span>
+          <strong>{{ profile.phone_number|default:"-" }}</strong>
+        </div>
+        {% if profile.company_name %}
+        <div class="profile-details__row">
+          <span>Razao social</span>
+          <strong>{{ profile.company_name }}</strong>
+        </div>
+        <div class="profile-details__row">
+          <span>CNPJ</span>
+          <strong>{{ profile.cnpj }}</strong>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
