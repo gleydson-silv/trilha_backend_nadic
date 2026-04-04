@@ -202,3 +202,13 @@ def app_cart(request):
 
     _consume_pending_role(request, user)
     return render(request, "cart.html")
+
+
+@ensure_csrf_cookie
+def app_addresses(request):
+    user = request.user
+    if not user.is_authenticated:
+        return redirect("/app/login/")
+
+    _consume_pending_role(request, user)
+    return render(request, "addresses.html")

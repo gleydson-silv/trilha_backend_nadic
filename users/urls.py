@@ -34,5 +34,6 @@ urlpatterns = [
     path('app/profile/', frontend_views.app_profile, name='app_profile'),
     path('app/profile/details/', frontend_views.app_profile_details, name='app_profile_details'),
     path('app/cart/', frontend_views.app_cart, name='app_cart'),
+    path('app/addresses/', frontend_views.app_addresses, name='app_addresses'),
     path('app/store/', frontend_views.app_store, name='app_store'),
 ]
