@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Enderecos{% endblock %}
+
+{% block content %}
+<section class="addresses">
+  <div class="container">
+    <div class="addresses__header">
+      <a class="link" href="/app/profile/">Voltar</a>
+      <h1>Enderecos</h1>
+      <p class="muted">Gerencie seus enderecos de entrega e cobranca.</p>
+    </div>
+
+    <div class="addresses__card">
+      <strong>Nenhum endereco cadastrado.</strong>
+      <p class="muted">Adicione um endereco quando precisar concluir um pedido.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}
