@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Carrinho{% endblock %}
+
+{% block content %}
+<section class="cart">
+  <div class="container">
+    <div class="cart__header">
+      <h1>Seu carrinho</h1>
+      <p class="muted">Revise os itens antes de finalizar.</p>
+    </div>
+
+    <div class="cart__grid">
+      <div class="cart__items">
+        <div class="cart__empty">
+          <strong>Nenhum item no carrinho.</strong>
+          <p class="muted">Explore a loja e adicione produtos para continuar.</p>
+          <a class="btn" href="/app/store/">Voltar para a loja</a>
+        </div>
+      </div>
+      <div class="cart__summary">
+        <h3>Resumo</h3>
+        <div class="cart__row">
+          <span>Subtotal</span>
+          <strong>R$ 0,00</strong>
+        </div>
+        <div class="cart__row">
+          <span>Frete</span>
+          <strong>R$ 0,00</strong>
+        </div>
+        <div class="cart__total">
+          <span>Total</span>
+          <strong>R$ 0,00</strong>
+        </div>
+        <button class="btn" disabled>Finalizar compra</button>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
