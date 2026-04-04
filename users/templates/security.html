@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Seguranca{% endblock %}
+
+{% block content %}
+<section class="security">
+  <div class="container">
+    <div class="security__header">
+      <a class="link" href="/app/profile/">Voltar</a>
+      <h1>Seguranca</h1>
+      <p class="muted">Ative e gerencie a verificacao em duas etapas.</p>
+    </div>
+
+    <div class="security__grid">
+      <div class="security__card">
+        <h3>Status</h3>
+        <p class="muted">
+          {% if profile.two_factor_enabled %}
+            2FA esta ativo na sua conta.
+          {% else %}
+            2FA esta desativado. Ative para mais seguranca.
+          {% endif %}
+        </p>
+      </div>
+
+      <div class="security__card">
+        <h3>Ativar 2FA</h3>
+        <form class="account__form" data-endpoint="/account/2fa/enable/" data-method="POST">
+          {% csrf_token %}
+          <button class="btn" type="submit" {% if profile.two_factor_enabled %}disabled{% endif %}>
+            Ativar
+          </button>
+          <div class="result" data-result></div>
+        </form>
+      </div>
+
+      <div class="security__card">
+        <h3>Verificar codigo</h3>
+        <form class="account__form" data-endpoint="/account/2fa/verify/" data-method="POST">
+          {% csrf_token %}
+          <input type="hidden" name="email" value="{{ profile.email }}" />
+          <input class="account__input" type="text" name="code" placeholder="Codigo 2FA" />
+          <button class="btn btn--ghost" type="submit">Verificar</button>
+          <div class="result" data-result></div>
+        </form>
+      </div>
+
+      <div class="security__card">
+        <h3>Desativar 2FA</h3>
+        <form class="account__form" data-endpoint="/account/2fa/disable/" data-method="POST">
+          {% csrf_token %}
+          <button class="btn btn--ghost" type="submit" {% if not profile.two_factor_enabled %}disabled{% endif %}>
+            Desativar
+          </button>
+          <div class="result" data-result></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
