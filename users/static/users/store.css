@@ -433,8 +433,6 @@ body {
 }
 
 .cart__header h1 {
-  font-family: "DM Serif Display", serif;
-  font-size: clamp(2rem, 3vw, 2.8rem);
   margin: 0 0 10px;
 }
 
@@ -495,6 +493,55 @@ body {
   padding: 24px;
   display: grid;
   gap: 8px;
+}
+
+.account__meta {
+  margin-top: 6px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.account__form {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.account__input {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #fff;
+  font-size: 0.95rem;
+}
+
+.account__form .result {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.security {
+  padding: 72px 0 96px;
+}
+
+.security__header h1 {
+  margin: 0 0 10px;
+}
+
+.security__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+.security__card {
+  background: var(--card);
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  display: grid;
+  gap: 12px;
 }
 
 @media (max-width: 900px) {
