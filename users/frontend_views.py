@@ -192,3 +192,13 @@ def app_profile_details(request):
         )
 
     return render(request, "profile-details.html", {"profile": payload})
+
+
+@ensure_csrf_cookie
+def app_cart(request):
+    user = request.user
+    if not user.is_authenticated:
+        return redirect("/app/login/")
+
+    _consume_pending_role(request, user)
+    return render(request, "cart.html")
