@@ -212,3 +212,21 @@ def app_addresses(request):
 
     _consume_pending_role(request, user)
     return render(request, "addresses.html")
+
+
+@ensure_csrf_cookie
+def app_security(request):
+    user = request.user
+    if not user.is_authenticated:
+        return redirect("/app/login/")
+
+    _consume_pending_role(request, user)
+
+    payload = {
+        "name": f"{user.first_name} {user.last_name}".strip(),
+        "email": user.email,
+        "role": user.role,
+        "two_factor_enabled": user.two_factor_enabled,
+    }
+
+    return render(request, "security.html", {"profile": payload})
