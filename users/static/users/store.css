@@ -69,6 +69,12 @@ body {
   
 }
 
+.brand__name {
+  font-weight: 700;
+  color: var(--accent);
+  text-decoration: none;
+}
+
 .nav {
   display: flex;
   gap: 20px;
