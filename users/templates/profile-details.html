@@ -24,7 +24,15 @@
         </div>
         <div class="profile-details__row">
           <span>Perfil</span>
-          <strong>{{ profile.role|default:"-" }}</strong>
+          <strong>
+            {% if profile.role == "customer" %}
+              Cliente
+            {% elif profile.role == "seller" %}
+              Vendedor
+            {% else %}
+              {{ profile.role|default:"-" }}
+            {% endif %}
+          </strong>
         </div>
         {% if profile.cpf %}
         <div class="profile-details__row">

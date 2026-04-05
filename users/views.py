@@ -13,7 +13,7 @@ from .serializers import (
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from django_ratelimit.decorators import ratelimit
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login as django_login
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -92,7 +92,8 @@ def login(request):
             data={"2fa_required": True},
             message="Informe o codigo de verificação",
         )
-    
+
+    django_login(request, user)
     refresh = RefreshToken.for_user(user)
     
     return ok_response(
