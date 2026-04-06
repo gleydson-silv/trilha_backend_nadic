@@ -37,4 +37,8 @@ urlpatterns = [
     path('app/cart/', frontend_views.app_cart, name='app_cart'),
     path('app/addresses/', frontend_views.app_addresses, name='app_addresses'),
     path('app/store/', frontend_views.app_store, name='app_store'),
+    path('app/news/', frontend_views.app_news, name='app_news'),
+    path('app/collections/', frontend_views.app_collections, name='app_collections'),
+    path('app/accessories/', frontend_views.app_accessories, name='app_accessories'),
+    path('app/about/', frontend_views.app_about, name='app_about'),
 ]
