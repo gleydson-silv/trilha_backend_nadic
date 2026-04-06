@@ -211,7 +211,11 @@ def app_addresses(request):
         return redirect("/app/login/")
 
     _consume_pending_role(request, user)
-    return render(request, "addresses.html")
+
+    customer = getattr(user, "customer_profile", None)
+    addresses = list(customer.addresses.all()) if customer else []
+
+    return render(request, "addresses.html", {"addresses": addresses})
 
 
 @ensure_csrf_cookie
@@ -230,3 +234,43 @@ def app_security(request):
     }
 
     return render(request, "security.html", {"profile": payload})
+
+
+@ensure_csrf_cookie
+def app_news(request):
+    user = request.user
+    if not user.is_authenticated:
+        return redirect("/app/login/")
+
+    _consume_pending_role(request, user)
+    return render(request, "news.html")
+
+
+@ensure_csrf_cookie
+def app_collections(request):
+    user = request.user
+    if not user.is_authenticated:
+        return redirect("/app/login/")
+
+    _consume_pending_role(request, user)
+    return render(request, "collections.html")
+
+
+@ensure_csrf_cookie
+def app_accessories(request):
+    user = request.user
+    if not user.is_authenticated:
+        return redirect("/app/login/")
+
+    _consume_pending_role(request, user)
+    return render(request, "accessories.html")
+
+
+@ensure_csrf_cookie
+def app_about(request):
+    user = request.user
+    if not user.is_authenticated:
+        return redirect("/app/login/")
+
+    _consume_pending_role(request, user)
+    return render(request, "about.html")
