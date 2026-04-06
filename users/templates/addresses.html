@@ -1,20 +1,136 @@
 {% extends "base.html" %}
 
-{% block title %}Enderecos{% endblock %}
+{% block title %}Endereços{% endblock %}
 
 {% block content %}
 <section class="addresses">
   <div class="container">
     <div class="addresses__header">
       <a class="link" href="/app/profile/">Voltar</a>
-      <h1>Enderecos</h1>
-      <p class="muted">Gerencie seus enderecos de entrega e cobranca.</p>
+      <h1>Endereços</h1>
+      <p class="muted">Gerencie seus endereços de entrega e cobrança.</p>
     </div>
 
+    {% if addresses %}
     <div class="addresses__card">
-      <strong>Nenhum endereco cadastrado.</strong>
-      <p class="muted">Adicione um endereco quando precisar concluir um pedido.</p>
+      <h3>Meus Endereços</h3>
+      {% for address in addresses %}
+      <div class="account__chip">
+        <strong>{{ address.street }}, {{ address.number }}</strong>
+        <span>{{ address.city }}, {{ address.state }} &mdash; {{ address.zip_code }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="addresses__card">
+      <h3>Novo Endereço</h3>
+      <form id="address-form" method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="auth-neo__field">
+          <label for="zip_code">CEP</label>
+          <input type="text" id="zip_code" name="zip_code" maxlength="8" placeholder="00000000" required>
+          <span class="auth-neo__hint">Digite o CEP para preencher automaticamente.</span>
+        </div>
+
+        <div class="auth-neo__field">
+          <label for="street">Rua</label>
+          <input type="text" id="street" name="street" maxlength="255" placeholder="Nome da rua" required>
+        </div>
+
+        <div class="auth-neo__field">
+          <label for="number">Número</label>
+          <input type="text" id="number" name="number" maxlength="10" placeholder="s/n">
+        </div>
+
+        <div class="form__row">
+          <div class="auth-neo__field">
+            <label for="city">Cidade</label>
+            <input type="text" id="city" name="city" maxlength="100" placeholder="Sua cidade" required>
+          </div>
+
+          <div class="auth-neo__field">
+            <label for="state">Estado</label>
+            <input type="text" id="state" name="state" maxlength="100" placeholder="Seu estado" required>
+          </div>
+        </div>
+
+        <div class="auth-neo__field">
+          <label for="country">Pais</label>
+          <input type="text" id="country" name="country" maxlength="100" placeholder="Seu pais" required>
+        </div>
+
+        <button type="submit" class="auth-neo__submit addresses__submit">Cadastrar Endereço</button>
+      </form>
+
+      <p class="result" id="form-result"></p>
     </div>
   </div>
 </section>
+
+<script>
+(async () => {
+  const form = document.getElementById("address-form");
+  const result = document.getElementById("form-result");
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+  const zipInput = document.getElementById("zip_code");
+  let cepTimer = null;
+  zipInput.addEventListener("input", () => {
+    clearTimeout(cepTimer);
+    const cep = zipInput.value.replace(/\D/g, "");
+    if (cep.length === 8) {
+      cepTimer = setTimeout(async () => {
+        try {
+          const resp = await fetch(`/cep/${cep}/`);
+          const json = await resp.json();
+          if (json.success && json.data) {
+            const d = json.data;
+            document.getElementById("street").value = d.logradouro || "";
+            document.getElementById("city").value = d.localidade || "";
+            document.getElementById("state").value = d.uf || "";
+            document.getElementById("country").value = "Brasil";
+          }
+        } catch {}
+      }, 600);
+    }
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    result.textContent = "Enviando...";
+
+    const data = {
+      zip_code: document.getElementById("zip_code").value,
+      street: document.getElementById("street").value,
+      number: document.getElementById("number").value || "s/n",
+      city: document.getElementById("city").value,
+      state: document.getElementById("state").value,
+      country: document.getElementById("country").value,
+    };
+
+    try {
+      const resp = await fetch("/profile/address/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
+        },
+        body: JSON.stringify(data),
+      });
+      const json = await resp.json();
+
+      if (json.success) {
+        result.textContent = json.message || "Endereco cadastrado com sucesso!";
+        form.reset();
+      } else {
+        result.textContent = json.error || "Erro ao cadastrar endereco.";
+      }
+    } catch {
+      result.textContent = "Erro de conexao. Tente novamente.";
+    }
+  });
+})();
+</script>
 {% endblock %}
