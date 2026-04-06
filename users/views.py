@@ -431,38 +431,31 @@ def consultar_cep(request, cep):
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         )
 
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+
+@api_view(["GET"])
+def consultar_cep(request, cep):
     try:
         url = f"https://viacep.com.br/ws/{cep}/json/"
         response = requests.get(url, timeout=5)
-
-        if response.status_code != 200:
-            return error_response(
-                "Erro ao consultar serviço de CEP",
-                status_code=status.HTTP_502_BAD_GATEWAY,
-            )
-
         data = response.json()
 
-        
         if "erro" in data:
-            return error_response(
-                "CEP inválido ou não encontrado",
-                status_code=status.HTTP_404_NOT_FOUND,
-            )
-        Address.zip_code = cep
-        Address.save()
-        return ok_response(data=data)
+            return Response({"erro": "CEP inválido"}, status=status.HTTP_400_BAD_REQUEST)
 
-    except requests.exceptions.Timeout:
-        return error_response(
-            "Timeout ao consultar CEP",
-            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
-        )
+        return Response(data)
 
     except requests.exceptions.RequestException:
-        return error_response(
-            "Erro de conexão com o serviço de CEP",
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        return Response(
+            {"erro": "Erro ao consultar o serviço de CEP"},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE
+        )
+
+    except Exception as e:
+        return Response(
+            {"erro": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
 
