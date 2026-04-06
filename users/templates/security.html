@@ -33,18 +33,6 @@
           <div class="result" data-result></div>
         </form>
       </div>
-
-      <div class="security__card">
-        <h3>Verificar codigo</h3>
-        <form class="account__form" data-endpoint="/account/2fa/verify/" data-method="POST">
-          {% csrf_token %}
-          <input type="hidden" name="email" value="{{ profile.email }}" />
-          <input class="account__input" type="text" name="code" placeholder="Codigo 2FA" />
-          <button class="btn btn--ghost" type="submit">Verificar</button>
-          <div class="result" data-result></div>
-        </form>
-      </div>
-
       <div class="security__card">
         <h3>Desativar 2FA</h3>
         <form class="account__form" data-endpoint="/account/2fa/disable/" data-method="POST">
