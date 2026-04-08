@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Suporte{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="section__head">
+      <div>
+        <p class="eyebrow">Central de ajuda</p>
+        <h2>Suporte</h2>
+        <p class="muted">Respostas rápidas, guias e canais de atendimento.</p>
+      </div>
+      <a class="btn btn--ghost" href="/app/profile/">Minha conta</a>
+    </div>
+
+    <div class="grid">
+      <article class="card">
+        <h3>Precisa de ajuda agora?</h3>
+        <p class="muted">Comece pelo FAQ ou fale com a gente pelos canais abaixo.</p>
+        <div class="hero__actions">
+          <a class="btn" href="#faq">Ver perguntas frequentes</a>
+          <a class="btn btn--ghost" href="#contato">Falar com o suporte</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <h3>Status do pedido</h3>
+        <p class="muted">Acompanhe compras, entregas e atualizações de envio.</p>
+        <a class="link" href="#">Ver meus pedidos</a>
+      </article>
+
+      <article class="card">
+        <h3>Trocas e devolucoes</h3>
+        <p class="muted">Entenda prazos, condicoes e como solicitar uma devolucao.</p>
+        <a class="link" href="#">Como funciona</a>
+      </article>
+
+      <article class="card">
+        <h3>Pagamentos</h3>
+        <p class="muted">Cartao, Pix, boleto e duvidas de cobranca.</p>
+        <a class="link" href="#">Ver orientacoes</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section section--muted" id="faq">
+  <div class="container">
+    <div class="section__head">
+      <h2>Perguntas frequentes</h2>
+      <p class="muted">Resolvemos as duvidas mais comuns em poucos passos.</p>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Como redefinir minha senha?</h3>
+        <p class="muted">Use a opcao "Esqueci minha senha" na tela de login e siga as instrucoes enviadas para o seu email.</p>
+      </div>
+      <div class="card">
+        <h3>Como atualizar meus dados?</h3>
+        <p class="muted">Acesse "Minha conta" e abra "Informacoes do seu perfil" para conferir e atualizar seus dados.</p>
+      </div>
+      <div class="card">
+        <h3>Meu pagamento falhou. E agora?</h3>
+        <p class="muted">Tente novamente ou escolha outro metodo. Se a cobranca persistir, contate o suporte com o horario do erro.</p>
+      </div>
+      <div class="card">
+        <h3>Quais sao os prazos de entrega?</h3>
+        <p class="muted">O prazo depende da sua regiao e do tipo de envio. Voce ve a estimativa antes de finalizar a compra.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="contato">
+  <div class="container">
+    <div class="section__head">
+      <h2>Contato</h2>
+      <p class="muted">Atendimento em dias uteis, 09:00-18:00.</p>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Email</h3>
+        <p class="muted">Para solicitacoes detalhadas e envio de comprovantes.</p>
+        <p><strong>suporte@flowcrm.local</strong></p>
+      </div>
+      <div class="card">
+        <h3>WhatsApp</h3>
+        <p class="muted">Atendimento rapido para duvidas curtas.</p>
+        <p><strong>(11) 99999-0000</strong></p>
+      </div>
+      <div class="card">
+        <h3>Seguranca da conta</h3>
+        <p class="muted">Ative a verificacao em duas etapas para proteger sua conta.</p>
+        <a class="btn btn--ghost" href="/app/security/">Gerenciar 2FA</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
