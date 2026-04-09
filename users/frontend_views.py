@@ -311,3 +311,13 @@ def app_deliveries(request):
 
     _consume_pending_role(request, user)
     return render(request, "deliveries.html")
+
+
+@ensure_csrf_cookie
+def app_returns(request):
+    user = request.user
+    if not user.is_authenticated:
+        return redirect("/app/login/")
+
+    _consume_pending_role(request, user)
+    return render(request, "returns.html")
