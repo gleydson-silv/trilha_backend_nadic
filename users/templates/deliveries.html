@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Entregas{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="section__head">
+      <div>
+        <p class="eyebrow">Envio e rastreio</p>
+        <h2>Entregas</h2>
+        <p class="muted">Prazos, valores, rastreio e o que fazer se algo sair do esperado.</p>
+      </div>
+      <div class="hero__actions">
+        <a class="btn" href="#rastreio">Rastrear pedido</a>
+        <a class="btn btn--ghost" href="#problemas">Tive um problema</a>
+      </div>
+    </div>
+
+    <div class="grid">
+      <article class="card">
+        <h3>Prazos</h3>
+        <p class="muted">A estimativa aparece no checkout e depende do CEP, volume e tipo de envio.</p>
+        <p class="muted">Em geral: capitais chegam mais rapido; interiores podem levar mais alguns dias.</p>
+      </article>
+
+      <article class="card">
+        <h3>Frete</h3>
+        <p class="muted">O valor do frete e calculado automaticamente no checkout.</p>
+        <p class="muted">Promocoes podem oferecer frete gratis acima de um valor minimo.</p>
+      </article>
+
+      <article class="card">
+        <h3>Atualizacões de status</h3>
+        <p class="muted">Você recebe atualizacoes por email conforme o pedido avanca: pago, separado, enviado e entregue.</p>
+      </article>
+
+      <article class="card">
+        <h3>Entrega não recebida</h3>
+        <p class="muted">Se o rastreio constar como entregue e você não recebeu, verifique portaria, vizinhos e caixas de correspondencia.</p>
+        <a class="link" href="#problemas">Ver passos recomendados</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section section--muted" id="rastreio">
+  <div class="container">
+    <div class="section__head">
+      <h2>Rastreio</h2>
+      <p class="muted">Use o codigo de rastreio do seu pedido (exemplo de portifolio).</p>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Como rastrear</h3>
+        <p class="muted">1. Encontre o codigo no email de confirmacão de envio.</p>
+        <p class="muted">2. Consulte o status no site da transportadora.</p>
+        <p class="muted">3. Se estiver parado por muitos dias, nos avise.</p>
+      </div>
+      <div class="card">
+        <h3>Dica</h3>
+        <p class="muted">Quando o pedido muda para "Enviado", o rastreio pode levar algumas horas para aparecer.</p>
+        <a class="btn btn--ghost" href="/app/support/">Preciso de ajuda</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="problemas">
+  <div class="container">
+    <div class="section__head">
+      <h2>Problemas comuns</h2>
+      <p class="muted">Passos rapidos para resolver sem dor de cabeca.</p>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Atraso na entrega</h3>
+        <p class="muted">Confirme o CEP e verifique se houve tentativa de entrega. Em feriados, o prazo pode mudar.</p>
+      </div>
+      <div class="card">
+        <h3>Endereco incorreto</h3>
+        <p class="muted">Se o pedido ainda nao foi enviado, entre em contato o quanto antes para tentarmos corrigir.</p>
+      </div>
+      <div class="card">
+        <h3>Pacote avariado</h3>
+        <p class="muted">Tire fotos do pacote e do produto e fale com o suporte para avaliarmos a melhor solucao.</p>
+        <a class="link" href="/app/support/">Falar com suporte</a>
+      </div>
+      <div class="card">
+        <h3>Extravio</h3>
+        <p class="muted">Se o rastreio indicar extravio, abrimos uma solicitacao e mantemos voce informado ate a resolucao.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+

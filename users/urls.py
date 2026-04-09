@@ -42,4 +42,5 @@ urlpatterns = [
     path('app/accessories/', frontend_views.app_accessories, name='app_accessories'),
     path('app/about/', frontend_views.app_about, name='app_about'),
     path('app/support/', frontend_views.app_support, name='app_support'),
+    path('app/deliveries/', frontend_views.app_deliveries, name='app_deliveries'),
 ]
