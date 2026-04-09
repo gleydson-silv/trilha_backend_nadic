@@ -301,3 +301,13 @@ def app_support(request):
 
     _consume_pending_role(request, user)
     return render(request, "support.html")
+
+
+@ensure_csrf_cookie
+def app_deliveries(request):
+    user = request.user
+    if not user.is_authenticated:
+        return redirect("/app/login/")
+
+    _consume_pending_role(request, user)
+    return render(request, "deliveries.html")
