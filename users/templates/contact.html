@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Contato{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="section__head">
+      <div>
+        <p class="eyebrow">Fale com a gente</p>
+        <h2>Contato</h2>
+        <p class="muted">Canais de atendimento e informacoes para suporte e parcerias.</p>
+      </div>
+      <div class="hero__actions">
+        <a class="btn" href="/app/support/">Ir para suporte</a>
+        <a class="btn btn--ghost" href="#mensagem">Enviar mensagem</a>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Email</h3>
+        <p class="muted">Ideal para solicitacoes com detalhes e anexos.</p>
+        <p><strong>contato@flowcrm.local</strong></p>
+      </div>
+
+      <div class="card">
+        <h3>WhatsApp</h3>
+        <p class="muted">Atendimento rapido para duvidas curtas.</p>
+        <p><strong>(11) 99999-0000</strong></p>
+      </div>
+
+      <div class="card">
+        <h3>Horario</h3>
+        <p class="muted">Dias uteis, 09:00-18:00 (horario local).</p>
+        <p class="muted">Fora desse horario, respondemos no proximo dia util.</p>
+      </div>
+
+      <div class="card">
+        <h3>Privacidade</h3>
+        <p class="muted">Nao envie senhas, codigos 2FA ou dados sensiveis por mensagem.</p>
+        <a class="link" href="/app/support/#faq">Ver FAQ</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--muted" id="mensagem">
+  <div class="container">
+    <div class="section__head">
+      <h2>Enviar mensagem</h2>
+      <p class="muted">Formulario demonstrativo (portifolio). Nao envia emails de verdade.</p>
+    </div>
+
+    <div class="card">
+      <form class="form">
+        <label class="field">
+          Assunto
+          <input type="text" placeholder="Ex: Duvida sobre entrega" />
+        </label>
+        <label class="field">
+          Sua mensagem
+          <input type="text" placeholder="Escreva aqui..." />
+        </label>
+        <button class="btn" type="button" disabled>Enviar</button>
+        <p class="muted">Para este projeto, use os canais acima para simular o contato.</p>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
