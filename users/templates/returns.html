@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Trocas e devolucoes{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="section__head">
+      <div>
+        <p class="eyebrow">Politica</p>
+        <h2>Trocas e devolucoes</h2>
+        <p class="muted">Como trocar, devolver e quais sao os prazos e condicoes.</p>
+      </div>
+      <div class="hero__actions">
+        <a class="btn" href="#passos">Ver passo a passo</a>
+        <a class="btn btn--ghost" href="/app/support/#contato">Falar com o suporte</a>
+      </div>
+    </div>
+
+    <div class="grid">
+      <article class="card">
+        <h3>Prazos</h3>
+        <p class="muted">Voce pode solicitar devolucao em ate 7 dias corridos apos o recebimento (exemplo de portifolio).</p>
+        <p class="muted">Para trocas, o prazo pode variar conforme o tipo de produto e disponibilidade.</p>
+      </article>
+
+      <article class="card">
+        <h3>Conservacao</h3>
+        <p class="muted">O item deve estar sem sinais de uso e com embalagem original, quando aplicavel.</p>
+      </article>
+
+      <article class="card">
+        <h3>Reembolso</h3>
+        <p class="muted">O reembolso ocorre apos a analise do item devolvido, no mesmo meio de pagamento sempre que possivel.</p>
+      </article>
+
+      <article class="card">
+        <h3>Troca por tamanho/cor</h3>
+        <p class="muted">Se houver disponibilidade, voce pode solicitar troca. Caso nao haja, oferecemos reembolso.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section section--muted" id="passos">
+  <div class="container">
+    <div class="section__head">
+      <h2>Passo a passo</h2>
+      <p class="muted">Um fluxo simples para nao ficar perdido.</p>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>1. Separe as informacoes</h3>
+        <p class="muted">Tenha em maos o email da compra e o motivo da troca/devolucao.</p>
+      </div>
+      <div class="card">
+        <h3>2. Entre em contato</h3>
+        <p class="muted">Fale com o suporte e envie fotos se o item estiver com defeito ou avariado.</p>
+      </div>
+      <div class="card">
+        <h3>3. Envio do item</h3>
+        <p class="muted">Depois da confirmacao, voce recebe instrucoes de postagem e etiqueta (quando aplicavel).</p>
+      </div>
+      <div class="card">
+        <h3>4. Analise e solucao</h3>
+        <p class="muted">Ao receber o item, avaliamos e seguimos com troca ou reembolso.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="faq">
+  <div class="container">
+    <div class="section__head">
+      <h2>Dicas rapidas</h2>
+      <p class="muted">Alguns pontos que evitam retrabalho.</p>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Posso trocar sem nota fiscal?</h3>
+        <p class="muted">Idealmente sim, mas se voce nao tiver, usamos os dados do pedido para localizar a compra.</p>
+      </div>
+      <div class="card">
+        <h3>Meu item chegou com defeito</h3>
+        <p class="muted">Nos avise o quanto antes e envie fotos. Vamos orientar o melhor caminho para resolver rapido.</p>
+      </div>
+      <div class="card">
+        <h3>Como acompanho a solicitacao?</h3>
+        <p class="muted">O suporte atualiza por email. Se preferir, chame pelo canal de contato com o numero do pedido.</p>
+        <a class="link" href="/app/support/">Ir para suporte</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
