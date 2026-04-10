@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.contrib.auth import logout as django_logout
 from .models import Product, User
 
 
@@ -16,6 +17,12 @@ def app_login(request):
 @ensure_csrf_cookie
 def app_forgot_password(request):
     return render(request, "forgot-password.html")
+
+
+@ensure_csrf_cookie
+def app_logout(request):
+    django_logout(request)
+    return redirect("/app/login/")
 
 
 def _has_value(value):
