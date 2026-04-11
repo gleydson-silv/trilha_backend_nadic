@@ -31,7 +31,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 import requests
 from .models import Address
 import pyotp
-from .validators import format_phone, format_cpf, format_cnpj
+from .validators import format_phone, format_cpf, format_cnpj, validate_cep
 
 
 def ok_response(data=None, message=None, status_code=status.HTTP_200_OK):
@@ -431,31 +431,33 @@ def consultar_cep(request, cep):
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         )
 
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
-
-@api_view(["GET"])
-def consultar_cep(request, cep):
     try:
-        url = f"https://viacep.com.br/ws/{cep}/json/"
+        validate_cep(cep)
+        cep_digits = "".join(ch for ch in cep if ch.isdigit())
+        url = f"https://viacep.com.br/ws/{cep_digits}/json/"
         response = requests.get(url, timeout=5)
+        response.raise_for_status()
         data = response.json()
 
-        if "erro" in data:
-            return Response({"erro": "CEP inválido"}, status=status.HTTP_400_BAD_REQUEST)
+        if data.get("erro"):
+            return error_response("CEP inválido")
 
-        return Response(data)
+        return ok_response(data=data)
+
+    except DjangoValidationError as exc:
+        message = exc.messages[0] if getattr(exc, "messages", None) else "CEP inválido"
+        return error_response(message)
 
     except requests.exceptions.RequestException:
-        return Response(
-            {"erro": "Erro ao consultar o serviço de CEP"},
-            status=status.HTTP_503_SERVICE_UNAVAILABLE
+        return error_response(
+            "Erro ao consultar o serviço de CEP",
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
         )
 
-    except Exception as e:
-        return Response(
-            {"erro": str(e)},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+    except Exception:
+        return error_response(
+            "Erro interno ao consultar CEP.",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
 
