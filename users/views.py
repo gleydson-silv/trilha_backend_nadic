@@ -13,6 +13,7 @@ from .serializers import (
     OrderSerializer,
 )
 from django.db import transaction
+from rest_framework import viewsets
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from django_ratelimit.decorators import ratelimit
@@ -634,118 +635,52 @@ class CategoryPagination(PageNumberPagination):
     max_page_size = 100
 
 
-@api_view(["GET", "POST"])
-@permission_classes([ProductAccessPermission])
-@ratelimit(key="user", rate="60/m", method="GET")
-@ratelimit(key="user", rate="10/m", method="POST")
-def products_list_create(request):
-    if getattr(request, "limited", False):
-        return error_response(
-            "Limite máximo de requisições atingido.",
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-        )
+class ProductViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = [ProductAccessPermission]
+    pagination_class = ProductPagination
 
-    if request.method == "GET":
-        if _is_seller(request.user):
-            queryset = Product.objects.filter(seller=request.user.seller_profile)
+    def get_queryset(self):
+        user = self.request.user
+        # Se for vendedor, filtra apenas os produtos dele
+        if user.is_authenticated and _is_seller(user):
+            queryset = Product.objects.filter(seller=user.seller_profile)
         else:
             queryset = Product.objects.all()
 
-        category_id = request.query_params.get("category")
-        min_price = request.query_params.get("min_price")
-        max_price = request.query_params.get("max_price")
-        in_stock = request.query_params.get("in_stock")
+        # Reaproveitando sua lógica de filtros por query params
+        category_id = self.request.query_params.get("category")
+        min_price = self.request.query_params.get("min_price")
+        max_price = self.request.query_params.get("max_price")
+        in_stock = self.request.query_params.get("in_stock")
 
         if category_id:
             queryset = queryset.filter(category_id=category_id)
-
+        
         if min_price:
             try:
                 queryset = queryset.filter(price__gte=Decimal(min_price))
-            except InvalidOperation:
-                return error_response("min_price inválido.")
+            except (InvalidOperation, TypeError):
+                pass
 
         if max_price:
             try:
                 queryset = queryset.filter(price__lte=Decimal(max_price))
-            except InvalidOperation:
-                return error_response("max_price inválido.")
+            except (InvalidOperation, TypeError):
+                pass
 
         if in_stock is not None:
             if in_stock.lower() in ("1", "true", "yes"):
                 queryset = queryset.filter(quantity_in_stock__gt=0)
             elif in_stock.lower() in ("0", "false", "no"):
                 queryset = queryset.filter(quantity_in_stock=0)
-            else:
-                return error_response("in_stock inválido. Use true/false.")
 
-        paginator = ProductPagination()
-        page = paginator.paginate_queryset(queryset.order_by("-created_at"), request)
-        serializer = ProductSerializer(page, many=True)
-        paginated = paginator.get_paginated_response(serializer.data).data
-        return ok_response(data=paginated)
+        return queryset.order_by("-created_at")
 
-    if not _is_seller(request.user):
-        return error_response(
-            "Apenas vendedores podem cadastrar produtos.",
-            status_code=status.HTTP_403_FORBIDDEN,
-        )
-
-    serializer = ProductSerializer(data=request.data, context={"request": request})
-    if serializer.is_valid():
-        serializer.save()
-        return ok_response(data=serializer.data, status_code=status.HTTP_201_CREATED)
-    return error_response("Dados inválidos.", details=normalize_serializer_errors(serializer.errors))
-
-
-@api_view(["GET", "PUT", "PATCH", "DELETE"])
-@permission_classes([ProductAccessPermission])
-@ratelimit(key="user", rate="60/m", method="GET")
-@ratelimit(key="user", rate="10/m", method="PUT")
-@ratelimit(key="user", rate="10/m", method="PATCH")
-@ratelimit(key="user", rate="10/m", method="DELETE")
-def product_detail_update_delete(request, product_id):
-    if getattr(request, "limited", False):
-        return error_response(
-            "Limite máximo de requisições atingido.",
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-        )
-
-    try:
-        product = Product.objects.get(pk=product_id)
-    except Product.DoesNotExist:
-        return error_response("Produto não encontrado.", status_code=status.HTTP_404_NOT_FOUND)
-
-    if request.method == "GET":
-        serializer = ProductDetailSerializer(product)
-        return ok_response(data=serializer.data)
-
-    if not _is_seller(request.user):
-        return error_response(
-            "Apenas vendedores podem editar/remover produtos.",
-            status_code=status.HTTP_403_FORBIDDEN,
-        )
-
-    if product.seller.user_id != request.user.id:
-        return error_response(
-            "Você não tem permissão para alterar este produto.",
-            status_code=status.HTTP_403_FORBIDDEN,
-        )
-
-    if request.method == "DELETE":
-        product.delete()
-        return ok_response(status_code=status.HTTP_204_NO_CONTENT)
-
-    serializer = ProductSerializer(
-        product,
-        data=request.data,
-        partial=(request.method == "PATCH"),
-        context={"request": request},
-    )
-    if serializer.is_valid():
-        serializer.save()
-        return ok_response(data=serializer.data)
-    return error_response("Dados inválidos.", details=normalize_serializer_errors(serializer.errors))
+    def perform_create(self, serializer):
+        # Associa automaticamente o vendedor logado ao produto
+        serializer.save(seller=self.request.user.seller_profile)
 
 
 @api_view(["GET"])
