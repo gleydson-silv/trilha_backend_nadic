@@ -2,7 +2,7 @@ from django.db import transaction
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 from rest_framework.settings import api_settings
-from .models import User, Customer, Seller, Product, Category
+from .models import User, Customer, Seller, Product, Category, Order, OrderItem
 from .validators import format_phone, format_cpf, format_cnpj
 
 
@@ -233,6 +233,40 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = ["id", "name", "description", "created_at"]
         read_only_fields = ["id", "created_at"]
+
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    product_name = serializers.ReadOnlyField(source="product.name")
+
+    class Meta:
+        model = OrderItem
+        fields = ["id", "product", "product_name", "quantity", "unit_price"]
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Order
+        fields = ["id", "order_date", "total_amount", "state", "items"]
+
+
+class CheckoutItemSerializer(serializers.Serializer):
+    product_id = serializers.IntegerField()
+    quantity = serializers.IntegerField(min_value=1)
+
+
+class CheckoutSerializer(serializers.Serializer):
+    items = CheckoutItemSerializer(many=True)
+    payment_method = serializers.ChoiceField(
+        choices=[
+            ("credit_card", "Cartão de Crédito"),
+            ("debit_card", "Cartão de Débito"),
+            ("boleto", "Boleto"),
+            ("pix", "Pix"),
+        ],
+        default="pix",
+    )
 
 
 def normalize_serializer_errors(errors):
