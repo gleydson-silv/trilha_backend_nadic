@@ -26,6 +26,7 @@ urlpatterns = [
     path('categories/', views.categories_list_create, name='categories_list_create'),
     path('categories/<int:category_id>/', views.category_detail_update_delete, name='category_detail_update_delete'),
     path('reports/revenue/', views.company_revenue, name='company_revenue'),
+    path('checkout/', views.checkout, name='checkout'),
     path('app/register/',frontend_views.app_register, name='app_register'),
     path('app/login/',frontend_views.app_login, name='app_login'),
     path('app/logout/', frontend_views.app_logout, name='app_logout'),
