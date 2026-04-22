@@ -1,11 +1,15 @@
-from django.urls import path
-from . import views,frontend_views
+from django.urls import path, include
+from . import views, frontend_views
 from django.views.generic import RedirectView
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register(r'products', views.ProductViewSet, basename='product')
 
 urlpatterns = [
     path('', RedirectView.as_view(url='/app/register/'), name='home'),
-    path('register/', views.register, name='register'),
-    path('login/', views.login, name='login'),
+    path('register/', views.RegisterView.as_view(), name='register'),
+    path('login/', views.LoginView.as_view(), name='login'),
     path('logout/',views.logout, name='logout'),
     path('forgot-password/', views.forgot_password, name='forgot_password'),
     path('reset-password/<uidb64>/<token>/', views.reset_password, name='reset_password'),
@@ -20,12 +24,11 @@ urlpatterns = [
     path('account/2fa/verify/', views.verify_2fa, name='verify_2fa'),
     path('account/2fa/enable/', views.enable_2fa, name='enable_2fa'),
     path('account/2fa/disable/', views.disable_2fa, name='disable_2fa'),
-    path('products/', views.products_list_create, name='products_list_create'),
-    path('products/<int:product_id>/', views.product_detail_update_delete, name='product_detail_update_delete'),
+    path('', include(router.urls)),
     path('products/<int:product_id>/details/', views.product_details_with_stock, name='product_details_with_stock'),
     path('categories/', views.categories_list_create, name='categories_list_create'),
     path('categories/<int:category_id>/', views.category_detail_update_delete, name='category_detail_update_delete'),
-    path('reports/revenue/', views.company_revenue, name='company_revenue'),
+    path('reports/revenue/', views.CompanyRevenueView.as_view(), name='company_revenue'),
     path('checkout/', views.checkout, name='checkout'),
     path('app/register/',frontend_views.app_register, name='app_register'),
     path('app/login/',frontend_views.app_login, name='app_login'),

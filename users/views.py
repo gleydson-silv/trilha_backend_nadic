@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from .serializers import (
     RegisterSerializer,
     LoginSerializer,
@@ -54,58 +55,66 @@ def error_response(error, status_code=status.HTTP_400_BAD_REQUEST, details=None)
     return Response(payload, status=status_code)
 
 
-@api_view(['POST'])
-@ratelimit(key='ip', rate='5/m', method='POST')
-def register(request):
-    if getattr(request, 'limited', False):
+class RegisterView(APIView):
+    @ratelimit(key="ip", rate="5/m", method="POST")
+    def post(self, request):
+        if getattr(request, "limited", False):
+            return error_response(
+                "Limite máximo de requisições atingido.",
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
+
+        serializer = RegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return ok_response(
+                data={"id": user.id, "email": user.email},
+                message="Usuário registrado com sucesso!",
+                status_code=status.HTTP_201_CREATED,
+            )
         return error_response(
-            "Limite máximo de requisições atingido.",
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            "Erro ao registrar usuário.",
+            details=normalize_serializer_errors(serializer.errors),
         )
-    
-    serializer = RegisterSerializer(data = request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return ok_response(
-            message="Usuário registrado com sucesso!",
-            status_code=status.HTTP_201_CREATED,
-        )
-    return error_response("Dados inválidos.", details=normalize_serializer_errors(serializer.errors))
 
 
-@api_view(['POST'])
-@ratelimit(key='ip', rate='5/m', method='POST')
-def login(request):
-    if getattr(request, 'limited', False):
+class LoginView(APIView):
+    @ratelimit(key="ip", rate="10/m", method="POST")
+    def post(self, request):
+        if getattr(request, "limited", False):
+            return error_response(
+                "Limite máximo de requisições atingido.",
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
+
+        email = request.data.get("email")
+        password = request.data.get("password")
+
+        user = authenticate(email=email, password=password)
+
+        if user:
+            # Login do Django para suporte a sessões
+            django_login(request, user, backend="allauth.account.auth_backends.AuthenticationBackend")
+
+            # Geração de tokens JWT
+            refresh = RefreshToken.for_user(user)
+            return ok_response(
+                data={
+                    "refresh": str(refresh),
+                    "access": str(refresh.access_token),
+                    "user": {
+                        "id": user.id,
+                        "email": user.email,
+                        "role": user.role,
+                        "two_factor_enabled": user.two_factor_enabled,
+                    },
+                },
+                message="Login realizado com sucesso!",
+            )
+
         return error_response(
-            "Limite máximo de requisições atingido.",
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            "Credenciais inválidas.", status_code=status.HTTP_401_UNAUTHORIZED
         )
-    
-    data = request.data
-    email = data.get('email')
-    password = data.get('password')
-    
-    user = authenticate(email = email, password=password)
-    
-    if not user:
-        return error_response("Credenciais inválidas", status_code=status.HTTP_401_UNAUTHORIZED)
-    
-    if user.two_factor_enabled:
-        return ok_response(
-            data={"2fa_required": True},
-            message="Informe o codigo de verificação",
-        )
-
-    django_login(request, user)
-    refresh = RefreshToken.for_user(user)
-    
-    return ok_response(
-        data={
-            "access": str(refresh.access_token),
-            "refresh": str(refresh),
-        }
-    )
 
 
 @api_view(['PATCH'])
@@ -702,23 +711,30 @@ def product_details_with_stock(request, product_id):
     return ok_response(data=serializer.data)
 
 
-@api_view(["GET"])
-@permission_classes([IsAuthenticated, IsSeller])
-@ratelimit(key="user", rate="30/m", method="GET")
-def company_revenue(request):
-    if getattr(request, "limited", False):
-        return error_response(
-            "Limite máximo de requisições atingido.",
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-        )
+class CompanyRevenueView(APIView):
+    permission_classes = [IsAuthenticated, IsSeller]
 
-    total = OrderItem.objects.filter(product__seller=request.user.seller_profile).aggregate(
-        total_revenue=Sum(
-            ExpressionWrapper(F("quantity") * F("unit_price"), output_field=DecimalField())
-        )
-    )["total_revenue"]
+    @ratelimit(key="user", rate="30/m", method="GET")
+    def get(self, request):
+        if getattr(request, "limited", False):
+            return error_response(
+                "Limite máximo de requisições atingido.",
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
 
-    return ok_response(data={"total_revenue": total or 0})
+        total = OrderItem.objects.filter(
+            product__seller=request.user.seller_profile
+        ).aggregate(
+            total_revenue=Sum(
+                ExpressionWrapper(
+                    F("quantity") * F("unit_price"), output_field=DecimalField()
+                )
+            )
+        )[
+            "total_revenue"
+        ]
+
+        return ok_response(data={"total_revenue": total or 0})
 
 
 @api_view(["POST"])
