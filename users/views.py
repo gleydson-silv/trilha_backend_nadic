@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.utils.decorators import method_decorator
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -56,7 +57,7 @@ def error_response(error, status_code=status.HTTP_400_BAD_REQUEST, details=None)
 
 
 class RegisterView(APIView):
-    @ratelimit(key="ip", rate="5/m", method="POST")
+    @method_decorator(ratelimit(key="ip", rate="5/m", method="POST"))
     def post(self, request):
         if getattr(request, "limited", False):
             return error_response(
@@ -79,7 +80,7 @@ class RegisterView(APIView):
 
 
 class LoginView(APIView):
-    @ratelimit(key="ip", rate="10/m", method="POST")
+    @method_decorator(ratelimit(key="ip", rate="10/m", method="POST"))
     def post(self, request):
         if getattr(request, "limited", False):
             return error_response(
@@ -714,7 +715,7 @@ def product_details_with_stock(request, product_id):
 class CompanyRevenueView(APIView):
     permission_classes = [IsAuthenticated, IsSeller]
 
-    @ratelimit(key="user", rate="30/m", method="GET")
+    @method_decorator(ratelimit(key="user", rate="30/m", method="GET"))
     def get(self, request):
         if getattr(request, "limited", False):
             return error_response(
