@@ -66,13 +66,15 @@ class ProfileCompletionSerializer(serializers.Serializer):
         if "cnpj" in attrs and attrs.get("cnpj"):
             attrs["cnpj"] = format_cnpj(attrs.get("cnpj"))
 
-        if role == User.Role.USER:
-            has_seller_signal = bool(attrs.get("company_name") or attrs.get("cnpj"))
-            has_customer_signal = bool(attrs.get("cpf"))
-            if has_seller_signal:
-                effective_role = User.Role.SELLER
-            elif has_customer_signal:
-                effective_role = User.Role.CUSTOMER
+        has_seller_signal = bool(attrs.get("company_name") or attrs.get("cnpj"))
+        has_customer_signal = bool(attrs.get("cpf"))
+
+        if has_seller_signal:
+            effective_role = User.Role.SELLER
+        elif has_customer_signal:
+            effective_role = User.Role.CUSTOMER
+        else:
+            effective_role = role
 
         if effective_role == User.Role.CUSTOMER:
             customer = Customer.objects.filter(user=user).first()
