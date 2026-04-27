@@ -24,17 +24,25 @@
           </div>
           <nav class="nav">
             {% block nav %}
-            <a href="/app/news/">Novidades</a>
-            <a href="/app/collections/">Coleções</a>
-            <a href="/app/accessories/">Acessórios</a>
-            <a href="/app/about/">Sobre</a>
+              {% if user.role == "customer" %}
+                <a href="/app/news/">Novidades</a>
+                <a href="/app/collections/">Coleções</a>
+                <a href="/app/accessories/">Acessórios</a>
+              {% elif user.role == "seller" %}
+                <a href="/app/store/">Painel</a>
+                <a href="/app/store/">Meus Produtos</a>
+                <a href="/app/store/">Vendas</a>
+              {% endif %}
+              <a href="/app/about/">Sobre</a>
             {% endblock %}
           </nav>
           <div class="topbar__actions">
             {% block header_actions %}
-            <a class="btn btn--ghost" href="/app/profile/">Minha conta</a>
-            <a class="btn" href="/app/cart/">Carrinho</a>
-            <a class="btn btn--ghost" href="/app/logout/">Sair</a>
+              <a class="btn btn--ghost" href="/app/profile/">Minha conta</a>
+              {% if user.role == "customer" %}
+                <a class="btn" href="/app/cart/">Carrinho</a>
+              {% endif %}
+              <a class="btn btn--ghost" href="/app/logout/">Sair</a>
             {% endblock %}
           </div>
         </div>
