@@ -96,9 +96,12 @@ def app_store(request):
         if role in (User.Role.CUSTOMER, User.Role.SELLER):
             redirect_url = f"{redirect_url}?role={role}"
         return redirect(redirect_url)
-
     products = Product.objects.all()
-    return render(request, "store.html", {"products": products})
+    if user.role == User.Role.CUSTOMER:
+        return render(request, "store_customer.html", {"products": products})
+    if user.role == User.Role.SELLER:
+        return render(request, "store_seller.html", {"products": products})
+
 
 
 @ensure_csrf_cookie
@@ -208,6 +211,10 @@ def app_cart(request):
         return redirect("/app/login/")
 
     _consume_pending_role(request, user)
+    
+    if user.role != User.Role.CUSTOMER:
+        return redirect("/app/store/")
+        
     return render(request, "cart.html")
 
 
@@ -250,6 +257,10 @@ def app_news(request):
         return redirect("/app/login/")
 
     _consume_pending_role(request, user)
+    
+    if user.role != User.Role.CUSTOMER:
+        return redirect("/app/store/")
+        
     return render(request, "news.html")
 
 
@@ -260,6 +271,10 @@ def app_collections(request):
         return redirect("/app/login/")
 
     _consume_pending_role(request, user)
+    
+    if user.role != User.Role.CUSTOMER:
+        return redirect("/app/store/")
+        
     return render(request, "collections.html")
 
 
@@ -270,6 +285,10 @@ def app_accessories(request):
         return redirect("/app/login/")
 
     _consume_pending_role(request, user)
+    
+    if user.role != User.Role.CUSTOMER:
+        return redirect("/app/store/")
+        
     return render(request, "accessories.html")
 
 
@@ -317,6 +336,10 @@ def app_deliveries(request):
         return redirect("/app/login/")
 
     _consume_pending_role(request, user)
+    
+    if user.role != User.Role.CUSTOMER:
+        return redirect("/app/store/")
+        
     return render(request, "deliveries.html")
 
 
@@ -327,4 +350,8 @@ def app_returns(request):
         return redirect("/app/login/")
 
     _consume_pending_role(request, user)
+    
+    if user.role != User.Role.CUSTOMER:
+        return redirect("/app/store/")
+        
     return render(request, "returns.html")
