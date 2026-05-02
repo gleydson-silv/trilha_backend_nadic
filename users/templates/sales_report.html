@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Relatório de Vendas{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="profile-details__header">
+            <p class="eyebrow">Financeiro</p>
+            <h1 class="studio-heading">Relatório de Vendas</h1>
+            <p class="lead">Acompanhe o desempenho da sua loja em tempo real.</p>
+        </div>
+
+        <div class="profile-details__grid">
+            <div class="profile-details__card">
+                <p class="eyebrow">Faturamento Total</p>
+                <h2 id="revenue-amount" class="revenue-display">R$ 0,00</h2>
+                <p class="muted">Total acumulado de todas as vendas.</p>
+            </div>
+
+            <div class="profile-details__card">
+                <p class="eyebrow">Ações Rápidas</p>
+                <div class="grid--tight">
+                    <a href="/app/my-products/" class="link">→ Gerenciar Produtos</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="section section--spacing-top">
+            <div class="section__head">
+                <h2>Histórico Recente</h2>
+            </div>
+            <div class="profile__card">
+                <p class="muted text-center p-24">Carregando dados das vendas...</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const response = await fetch('/reports/revenue/', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access')}`
+                }
+            });
+            const data = await response.json();
+            if (data.success) {
+                const amount = data.data.total_revenue;
+                document.getElementById('revenue-amount').textContent = `R$ ${parseFloat(amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+            }
+        } catch (error) {
+            console.error('Erro ao buscar faturamento:', error);
+        }
+    });
+</script>
+{% endblock %}
