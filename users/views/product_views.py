@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from rest_framework.views import APIView
 from ..serializers import (
     RegisterSerializer,
@@ -92,6 +93,19 @@ class ProductViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # Associa automaticamente o vendedor logado ao produto
         serializer.save(seller=self.request.user.seller_profile)
+
+    @action(detail=True, methods=['delete', 'post'], url_path='delete')
+    def delete_product(self, request, pk=None):
+        """
+        Endpoint explícito para exclusão de produto.
+        Acessível via DELETE ou POST em /products/<id>/delete/
+        """
+        product = self.get_object()
+        product.delete()
+        return Response({
+            "success": True, 
+            "message": "Produto excluído com sucesso do seu catálogo."
+        }, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])
