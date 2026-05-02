@@ -25,9 +25,13 @@
                     <span class="eyebrow">{{ product.category.name }}</span>
                     <h3>{{ product.name }}</h3>
                     <p class="muted">{{ product.description|truncatechars:80 }}</p>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
+                    <div class="card__footer">
                         <span class="price">R$ {{ product.price }}</span>
                         <small class="muted">Estoque: {{ product.quantity_in_stock }}</small>
+                    </div>
+                    <div class="card__actions">
+                        <a href="/app/products/edit/{{ product.id }}/" class="btn btn--small btn--ghost">Editar</a>
+                        <a href="/app/products/delete/{{ product.id }}/" class="btn btn--small btn--danger-outline">Excluir</a>
                     </div>
                 </div>
             </article>
