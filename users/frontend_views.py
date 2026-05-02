@@ -1,7 +1,7 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib.auth import logout as django_logout
-from .models import Product, User
+from .models import Product, User, Category
 
 
 @ensure_csrf_cookie
@@ -388,3 +388,33 @@ def app_product_create(request):
 
     _consume_pending_role(request, user)
     return render(request, "product_create.html")
+
+
+@ensure_csrf_cookie
+def app_product_edit(request, pk):
+    user = request.user
+    if not user.is_authenticated or user.role != User.Role.SELLER:
+        return redirect("/app/login/")
+
+    product = get_object_or_404(Product, pk=pk, seller__user=user)
+    categories = Category.objects.all()
+
+    _consume_pending_role(request, user)
+    return render(request, "product_edit.html", {
+        "product": product,
+        "categories": categories
+    })
+
+
+@ensure_csrf_cookie
+def app_product_delete_confirm(request, pk):
+    user = request.user
+    if not user.is_authenticated or user.role != User.Role.SELLER:
+        return redirect("/app/login/")
+
+    product = get_object_or_404(Product, pk=pk, seller__user=user)
+    
+    _consume_pending_role(request, user)
+    return render(request, "product_delete_confirm.html", {
+        "product": product
+    })
