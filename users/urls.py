@@ -52,4 +52,6 @@ urlpatterns = [
     path('app/my-products/', frontend_views.app_my_products, name='app_my_products'),
     path('app/sales-report/', frontend_views.app_sales_report, name='app_sales_report'),
     path('app/products/create/', frontend_views.app_product_create, name='app_product_create'),
+    path('app/products/edit/<int:pk>/', frontend_views.app_product_edit, name='app_product_edit'),
+    path('app/products/delete/<int:pk>/', frontend_views.app_product_delete_confirm, name='app_product_delete_confirm'),
 ]
