@@ -229,6 +229,40 @@ body {
   transform: translateY(-4px);
 }
 
+.card__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.card__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+.btn--small {
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  text-align: center;
+  cursor: pointer;
+}
+
+.btn--danger-outline {
+  background: transparent;
+  border: 1px solid #fee2e2;
+  color: #b91c1c;
+  cursor: pointer;
+}
+
+.btn--danger-outline:hover {
+  background: #fef2f2;
+  border-color: #ef4444;
+}
+
 .card__image {
   width: 100%;
   aspect-ratio: 1 / 1;
@@ -1479,3 +1513,85 @@ body {
 .auth-neo__bullets-spacing {
   margin-top: 32px;
 }
+
+/* Deletion Confirmation Styles */
+.delete-confirm {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.delete-confirm__card {
+  border-color: #fee2e2 !important;
+  background: #fffaf9 !important;
+}
+
+.delete-confirm__head {
+  text-align: center;
+}
+
+.delete-confirm__badge {
+  background: #ef4444 !important;
+  box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.15) !important;
+}
+
+.delete-confirm__eyebrow {
+  color: #b91c1c !important;
+}
+
+.delete-confirm__item-bar {
+  margin: 32px 0;
+  padding: 20px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #fee2e2;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.delete-confirm__thumb {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.delete-confirm__placeholder {
+  width: 60px;
+  height: 60px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+}
+
+.delete-confirm__name {
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.delete-confirm__actions {
+  grid-template-columns: 1fr 1fr;
+  border: none !important;
+  padding: 0 !important;
+}
+
+.btn--danger-solid {
+  background: #ef4444 !important;
+  color: white !important;
+  border: none !important;
+  justify-content: center;
+}
+
+.btn--danger-solid:hover {
+  background: #dc2626 !important;
+}
+/* Utility Classes for Clean Templates */
+.flex-center { display: flex; justify-content: center; align-items: center; }
+.text-center { text-align: center; }
+.mt-4 { margin-top: 4px; }
+.mt-24 { margin-top: 24px; }
+.mb-24 { margin-bottom: 24px; }
+.w-full { width: 100%; }
+.fs-sm { font-size: 0.85rem; }
