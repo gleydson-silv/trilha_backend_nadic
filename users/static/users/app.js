@@ -107,6 +107,12 @@
           return;
         }
 
+        // Store tokens if present (Login/Register)
+        if (payload.data) {
+          if (payload.data.access) localStorage.setItem('access', payload.data.access);
+          if (payload.data.refresh) localStorage.setItem('refresh', payload.data.refresh);
+        }
+
         if (redirectTo) {
           let redirectTarget = redirectTo;
           const roleField = form.querySelector('[name="role"]') || form.querySelector('[name="user_type"]');
