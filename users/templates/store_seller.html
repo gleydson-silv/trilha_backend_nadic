@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Loja{% endblock %}
 
@@ -13,15 +14,16 @@
           presença digital sempre impecável.
         </p>
         <div class="hero__actions">
-          <button class="btn">Cadastrar Produto</button>
+          <a href="/app/products/create/" class="btn">Cadastrar Produto</a>
         </div>
       </div>
       <div class="hero__media">
-        <div class="hero__image"></div>
+        <div class="hero__image">
+          <img src="{% static 'users/images-removebg-preview.png' %}" alt="Camisa Oversized" class="hero__img-content">
+        </div>
         <div class="hero__card">
-          <span>Novo</span>
-          <strong>Bolsa Sienna</strong>
-          <small>Couro natural</small>
+          <strong>Camisa Oversized</strong>
+          <small>Algodão premium</small>
         </div>
       </div>
     </div>
@@ -31,7 +33,7 @@
     <div class="container">
       <div class="section__head">
         <h2>Meus Produtos</h2>
-        <a href="#" class="link">Gerenciar todos</a>
+        <a href="/app/my-products/" class="link">Gerenciar todos</a>
       </div>
       <div class="grid">
         {% for product in products %}
