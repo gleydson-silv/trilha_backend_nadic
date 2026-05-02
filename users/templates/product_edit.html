@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Editar Produto{% endblock %}
+
+{% block content %}
+<section class="auth auth--refined">
+    <div class="auth__bg"></div>
+    <div class="container">
+        <div class="auth__grid">
+            <div class="auth__aside">
+                <div class="auth-neo__brand auth-neo__brand-wrapper">
+                    <span class="auth-neo__badge"></span>
+                    <span class="auth-neo__eyebrow">Studio</span>
+                </div>
+                <p class="studio-heading">
+                    Aperfeiçoe seu catálogo
+                </p>
+                <p class="studio-lead">Mantenha as informações de seus produtos sempre atualizadas e precisas.</p>
+
+                <div class="auth__bullets auth-neo__bullets-wrapper">
+                    <p class="muted">Alterações de preço e estoque são refletidas instantaneamente na vitrine.</p>
+                </div>
+                
+                <div style="margin-top: 40px;">
+                    <a href="/app/my-products/" class="link">← Voltar para Meus Produtos</a>
+                </div>
+            </div>
+
+            <div class="auth__panel">
+                <div class="auth-neo__card">
+                    <div class="auth-neo__head auth-neo__brand-wrapper">
+                        <p class="auth-neo__eyebrow">ID: #{{ product.id }}</p>
+                        <h2>Editar Produto</h2>
+                    </div>
+
+                    <form id="product-form" class="auth-neo__form" data-endpoint="/products/{{ product.id }}/" data-method="PATCH"
+                        data-redirect="/app/my-products/">
+                        {% csrf_token %}
+                        <div class="auth-neo__field">
+                            <label>Nome da Peça</label>
+                            <input type="text" name="name" value="{{ product.name }}" placeholder="Ex: Vaso Brutalista em Cerâmica" required>
+                        </div>
+
+                        <div class="auth-neo__field">
+                            <label>Categoria</label>
+                            <select name="category" id="category-select" required>
+                                {% for cat in categories %}
+                                <option value="{{ cat.id }}" {% if product.category.id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="auth-neo__field">
+                            <label>Descrição</label>
+                            <textarea name="description" class="auth-neo__textarea" rows="4"
+                                placeholder="Conte a história por trás deste produto..." required>{{ product.description }}</textarea>
+                        </div>
+
+                        <div class="account__grid">
+                            <div class="auth-neo__field">
+                                <label>Preço (R$)</label>
+                                <input type="number" name="price" step="0.01" value="{{ product.price|stringformat:".2f" }}" placeholder="0.00" required>
+                            </div>
+                            <div class="auth-neo__field">
+                                <label>Estoque Disponível</label>
+                                <input type="number" name="quantity_in_stock" value="{{ product.quantity_in_stock }}" placeholder="0" required>
+                            </div>
+                        </div>
+
+                        <div class="auth-neo__field">
+                            <label>Link da Imagem</label>
+                            <input type="url" name="image_url" value="{{ product.image_url|default:'' }}" placeholder="https://imagem.com/produto.jpg">
+                        </div>
+
+                        <button type="submit" class="btn auth-neo__submit auth-neo__submit--full">Salvar Alterações</button>
+                        <div id="form-message" class="auth-neo__message" data-result></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
