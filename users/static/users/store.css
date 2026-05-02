@@ -160,7 +160,8 @@ body {
   width: min(560px, 100%);
   aspect-ratio: 1 / 1;
   border-radius: 32px;
-  background: var(--bg); /* Cor de fundo da página */
+  background: var(--bg);
+  /* Cor de fundo da página */
   box-shadow: 0 40px 80px rgba(0, 0, 0, 0.05);
   overflow: hidden;
   border: 1px solid rgba(0, 0, 0, 0.03);
@@ -335,8 +336,8 @@ body {
 
 .account__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 30px;
 }
 
 .account__card {
@@ -974,22 +975,26 @@ body {
   color: #111827;
 }
 
-.auth-neo__field input {
+.auth-neo__field input,
+.auth-neo__field select,
+.auth-neo__textarea {
+  width: 100%;
   padding: 14px 16px;
   border-radius: 12px;
   border: 1px solid rgba(15, 23, 42, 0.12);
   background: #f8fafc;
   font-size: 1rem;
+  font-family: inherit;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+.auth-neo__field input,
+.auth-neo__field select {
+  height: 52px; /* Altura padronizada para alinhamento perfeito */
 }
 
 .auth-neo__field select {
-  padding: 14px 16px;
-  border-radius: 12px;
-  border: 1px solid rgba(15, 23, 42, 0.12);
-  background: #f8fafc;
-  font-size: 1rem;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
   appearance: none;
   background-image:
     linear-gradient(45deg, transparent 50%, #64748b 50%),
@@ -1378,12 +1383,10 @@ body {
 
 /* Studio & Seller Specific Styles */
 .studio-heading {
-  font-family: 'Outfit', sans-serif;
-  font-size: clamp(2.2rem, 4vw, 3.8rem);
   font-weight: 700;
   line-height: 1.1;
   color: #0f172a;
-  margin: 8px 0 12px;
+  font-size: 40px;
 }
 
 .studio-lead {
@@ -1405,16 +1408,7 @@ body {
   margin-bottom: 12px;
 }
 
-.auth-neo__textarea {
-  padding: 14px 16px;
-  border-radius: 12px;
-  border: 1px solid rgba(15, 23, 42, 0.12);
-  background: #f8fafc;
-  font-family: inherit;
-  font-size: 1rem;
-  resize: vertical;
-  width: 100%;
-}
+
 
 .auth-neo__submit--full {
   width: 100%;
@@ -1480,4 +1474,8 @@ body {
 
 .p-24 {
   padding: 24px;
+}
+
+.auth-neo__bullets-spacing {
+  margin-top: 32px;
 }

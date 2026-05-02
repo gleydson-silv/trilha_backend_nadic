@@ -12,11 +12,11 @@
                     <span class="auth-neo__badge"></span>
                     <span class="auth-neo__eyebrow">Studio</span>
                 </div>
-                <h1 class="studio-heading">
-                    Expanda seu<br>catálogo.
-                </h1>
+                <p class="studio-heading">
+                    Expanda seu catálogo
+                </p>
                 <p class="studio-lead">Transforme suas criações em itens disponíveis para o mundo.</p>
-                
+
                 <div class="auth__bullets auth-neo__bullets-wrapper">
                     <p class="muted">Lembre-se: fotos de alta qualidade convertem até 80% mais.</p>
                 </div>
@@ -28,8 +28,9 @@
                         <p class="auth-neo__eyebrow">Novo Produto</p>
                         <h2>Cadastro</h2>
                     </div>
-                    
-                    <form id="product-form" class="auth-neo__form" data-endpoint="/products/" data-method="POST" data-redirect="/app/my-products/">
+
+                    <form id="product-form" class="auth-neo__form" data-endpoint="/products/" data-method="POST"
+                        data-redirect="/app/my-products/">
                         {% csrf_token %}
                         <div class="auth-neo__field">
                             <label>Nome da Peça</label>
@@ -45,7 +46,8 @@
 
                         <div class="auth-neo__field">
                             <label>Descrição</label>
-                            <textarea name="description" class="auth-neo__textarea" rows="4" placeholder="Conte a história por trás deste produto..." required></textarea>
+                            <textarea name="description" class="auth-neo__textarea" rows="4"
+                                placeholder="Conte a história por trás deste produto..." required></textarea>
                         </div>
 
                         <div class="account__grid">
@@ -64,7 +66,8 @@
                             <input type="url" name="image_url" placeholder="https://imagem.com/produto.jpg">
                         </div>
 
-                        <button type="submit" class="btn auth-neo__submit auth-neo__submit--full">Publicar Produto</button>
+                        <button type="submit" class="btn auth-neo__submit auth-neo__submit--full">Publicar
+                            Produto</button>
                         <div id="form-message" class="auth-neo__message"></div>
                     </form>
                 </div>
