@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Excluir Produto{% endblock %}
+
+{% block content %}
+<section class="auth auth--refined">
+    <div class="auth__bg"></div>
+    <div class="container">
+        <div class="auth__grid delete-confirm">
+            <div class="auth__panel">
+                <div class="auth-neo__card delete-confirm__card">
+                    <div class="auth-neo__head delete-confirm__head">
+                        <div class="auth-neo__brand auth-neo__brand-wrapper flex-center mb-24">
+                            <span class="auth-neo__badge delete-confirm__badge"></span>
+                            <span class="auth-neo__eyebrow delete-confirm__eyebrow">Atenção: Ação Irreversível</span>
+                        </div>
+                        <h2>Confirmar Exclusão</h2>
+                        <p class="auth-neo__sub">
+                            Você tem certeza que deseja remover <strong>"{{ product.name }}"</strong> do seu catálogo?
+                        </p>
+                    </div>
+
+                    <div class="delete-confirm__item-bar">
+                        {% if product.image_url %}
+                        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="delete-confirm__thumb">
+                        {% else %}
+                        <div class="delete-confirm__placeholder">
+                            <span class="muted">📦</span>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <p class="delete-confirm__name">{{ product.name }}</p>
+                            <p class="muted mt-4 fs-sm">Preço: R$ {{ product.price }} | Estoque: {{ product.quantity_in_stock }}</p>
+                        </div>
+                    </div>
+
+                    <form class="auth-neo__form" data-endpoint="/products/{{ product.id }}/delete/" data-method="DELETE" data-redirect="/app/my-products/">
+                        {% csrf_token %}
+                        
+                        <div class="card__actions delete-confirm__actions">
+                            <a href="/app/my-products/" class="btn btn--ghost flex-center">Cancelar</a>
+                            <button type="submit" class="btn btn--danger-solid flex-center">Excluir</button>
+                        </div>
+                        
+                        <div id="form-message" class="auth-neo__message mt-24" data-result></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
