@@ -1657,3 +1657,25 @@ body {
 .mb-24 { margin-bottom: 24px; }
 .w-full { width: 100%; }
 .fs-sm { font-size: 0.85rem; }
+
+/* Field Specific Errors */
+.field-error {
+  display: block;
+  color: #b42318;
+  font-size: 0.75rem;
+  margin-top: 4px;
+  font-weight: 500;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.auth-neo__field:has(.field-error) input,
+.auth-neo__field:has(.field-error) select,
+.auth-neo__field:has(.field-error) textarea {
+  border-color: #fda29b !important;
+  background-color: #fffbfa !important;
+}

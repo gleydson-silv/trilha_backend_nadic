@@ -95,6 +95,35 @@
     }
   };
 
+  const clearFieldErrors = (form) => {
+    form.querySelectorAll(".field-error").forEach((el) => el.remove());
+    form.querySelectorAll(".auth-neo__field").forEach((el) => {
+      el.classList.remove("has-error");
+    });
+  };
+
+  const showFieldErrors = (form, errors) => {
+    // A API pode retornar um objeto { field: [errors] } ou { detail: "msg" }
+    for (const [field, messages] of Object.entries(errors)) {
+      const input = form.querySelector(`[name="${field}"]`);
+      if (input) {
+        const fieldContainer = input.closest(".auth-neo__field");
+        const errorMessage = Array.isArray(messages) ? messages[0] : messages;
+
+        const errorEl = document.createElement("span");
+        errorEl.className = "field-error";
+        errorEl.textContent = errorMessage;
+
+        if (fieldContainer) {
+          fieldContainer.appendChild(errorEl);
+          fieldContainer.classList.add("has-error");
+        } else {
+          input.after(errorEl);
+        }
+      }
+    }
+  };
+
   const setResult = (form, message, isError = false) => {
     const result =
       form.closest(".auth-neo__card")?.querySelector("[data-result]") ||
@@ -184,6 +213,10 @@
           body = JSON.stringify(collectFormData(form));
         }
 
+        const submitBtn = form.querySelector('[type="submit"]');
+        if (submitBtn) submitBtn.classList.add("btn--loading");
+
+        clearFieldErrors(form);
         setResult(form, "Processando...");
 
         try {
@@ -194,11 +227,20 @@
             credentials: "same-origin",
           });
 
+          if (submitBtn) submitBtn.classList.remove("btn--loading");
+
           const payload = await response.json().catch(() => ({}));
 
           if (!response.ok || payload.success === false) {
+            // Se for um erro de validação (objeto com campos), mostra nos campos
+            if (response.status === 400 && typeof payload === "object") {
+              // Se a API retornar { "success": false, "error": { ... } }
+              const fieldErrors = payload.error || payload;
+              showFieldErrors(form, fieldErrors);
+            }
+            
             const message =
-              payload.error || payload.message || "Não foi possível concluir.";
+              payload.message || payload.error || "Não foi possível concluir.";
             setResult(form, message, true);
             return;
           }
