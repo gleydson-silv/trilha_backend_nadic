@@ -44,6 +44,9 @@
     const select = document.getElementById("category-select");
     if (!select) return;
 
+    // Se já tiver opções (mais que a padrão de 'Carregando'), não sobrescreve
+    if (select.options.length > 1) return;
+
     try {
       const response = await fetch("/categories/");
       const result = await response.json();
