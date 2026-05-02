@@ -96,10 +96,12 @@ def app_store(request):
         if role in (User.Role.CUSTOMER, User.Role.SELLER):
             redirect_url = f"{redirect_url}?role={role}"
         return redirect(redirect_url)
-    products = Product.objects.all()
     if user.role == User.Role.CUSTOMER:
+        products = Product.objects.all()
         return render(request, "store_customer.html", {"products": products})
     if user.role == User.Role.SELLER:
+        # Vendedor vê apenas seus produtos na seção "Meus Produtos" da store
+        products = Product.objects.filter(seller=user.seller_profile)
         return render(request, "store_seller.html", {"products": products})
 
 
@@ -355,3 +357,34 @@ def app_returns(request):
         return redirect("/app/store/")
         
     return render(request, "returns.html")
+
+
+@ensure_csrf_cookie
+def app_my_products(request):
+    user = request.user
+    if not user.is_authenticated or user.role != User.Role.SELLER:
+        return redirect("/app/login/")
+
+    _consume_pending_role(request, user)
+    products = Product.objects.filter(seller=user.seller_profile)
+    return render(request, "my_products.html", {"products": products})
+
+
+@ensure_csrf_cookie
+def app_sales_report(request):
+    user = request.user
+    if not user.is_authenticated or user.role != User.Role.SELLER:
+        return redirect("/app/login/")
+
+    _consume_pending_role(request, user)
+    return render(request, "sales_report.html")
+
+
+@ensure_csrf_cookie
+def app_product_create(request):
+    user = request.user
+    if not user.is_authenticated or user.role != User.Role.SELLER:
+        return redirect("/app/login/")
+
+    _consume_pending_role(request, user)
+    return render(request, "product_create.html")
