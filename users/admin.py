@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Product, Category, User
+from .models import Product, Category, User, Seller, Customer
 
 class AdminProduct(admin.ModelAdmin):
     list_display = ['name', 'price', 'quantity_in_stock', 'created_at']
@@ -20,5 +20,7 @@ class AdminUser(admin.ModelAdmin):
     ordering = ['-created_at']
     
 admin.site.register(User, AdminUser)
+admin.site.register(Seller)
+admin.site.register(Customer)
 
 
