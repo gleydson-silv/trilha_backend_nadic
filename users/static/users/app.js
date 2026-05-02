@@ -166,14 +166,23 @@
         const csrfToken = csrfInput ? csrfInput.value : null;
         const accessToken = localStorage.getItem("access");
 
-        const headers = {
-          "Content-Type": "application/json",
-        };
+        const fileInput = form.querySelector('input[type="file"]');
+        const hasFile = fileInput && fileInput.files.length > 0;
+
+        const headers = {};
         if (csrfToken) headers["X-CSRFToken"] = csrfToken;
         if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
 
-        const body =
-          method === "GET" ? undefined : JSON.stringify(collectFormData(form));
+        let body;
+        if (method === "GET" || method === "DELETE") {
+          body = undefined;
+        } else if (hasFile) {
+          // FormData para upload (O navegador define o Content-Type com boundary automaticamente)
+          body = new FormData(form);
+        } else {
+          headers["Content-Type"] = "application/json";
+          body = JSON.stringify(collectFormData(form));
+        }
 
         setResult(form, "Processando...");
 

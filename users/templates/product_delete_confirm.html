@@ -22,8 +22,8 @@
                     </div>
 
                     <div class="delete-confirm__item-bar">
-                        {% if product.image_url %}
-                        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="delete-confirm__thumb">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="delete-confirm__thumb">
                         {% else %}
                         <div class="delete-confirm__placeholder">
                             <span class="muted">📦</span>
