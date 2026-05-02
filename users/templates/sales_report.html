@@ -37,22 +37,4 @@
     </div>
 </section>
 
-<script>
-    document.addEventListener('DOMContentLoaded', async () => {
-        try {
-            const response = await fetch('/reports/revenue/', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('access')}`
-                }
-            });
-            const data = await response.json();
-            if (data.success) {
-                const amount = data.data.total_revenue;
-                document.getElementById('revenue-amount').textContent = `R$ ${parseFloat(amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-            }
-        } catch (error) {
-            console.error('Erro ao buscar faturamento:', error);
-        }
-    });
-</script>
 {% endblock %}

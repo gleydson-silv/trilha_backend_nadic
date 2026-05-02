@@ -29,7 +29,8 @@
                         <h2>Cadastro</h2>
                     </div>
                     
-                    <form id="product-form" class="auth-neo__form">
+                    <form id="product-form" class="auth-neo__form" data-endpoint="/products/" data-method="POST" data-redirect="/app/my-products/">
+                        {% csrf_token %}
                         <div class="auth-neo__field">
                             <label>Nome da Peça</label>
                             <input type="text" name="name" placeholder="Ex: Vaso Brutalista em Cerâmica" required>
@@ -72,75 +73,4 @@
     </div>
 </section>
 
-<script>
-    document.addEventListener('DOMContentLoaded', async () => {
-        const categorySelect = document.getElementById('category-select');
-        const form = document.getElementById('product-form');
-        const messageDiv = document.getElementById('form-message');
-
-        // Fetch Categories
-        try {
-            const response = await fetch('/categories/');
-            const result = await response.json();
-            if (result.success) {
-                categorySelect.innerHTML = '<option value="">Selecione uma categoria</option>';
-                result.data.results.forEach(cat => {
-                    const option = document.createElement('option');
-                    option.value = cat.id;
-                    option.textContent = cat.name;
-                    categorySelect.appendChild(option);
-                });
-            }
-        } catch (error) {
-            categorySelect.innerHTML = '<option value="">Erro ao carregar categorias</option>';
-        }
-
-        // Handle Submit
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            messageDiv.textContent = 'Enviando...';
-            
-            const formData = new FormData(form);
-            const payload = Object.from_iterable(formData.entries());
-            
-            // Convert numbers
-            payload.price = parseFloat(payload.price);
-            payload.quantity_in_stock = parseInt(payload.quantity_in_stock);
-            payload.category = parseInt(payload.category);
-
-            try {
-                const response = await fetch('/products/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('access')}`,
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    messageDiv.innerHTML = '<span style="color: var(--accent);">Produto cadastrado com sucesso! Redirecionando...</span>';
-                    setTimeout(() => window.location.href = '/app/my-products/', 2000);
-                } else {
-                    messageDiv.innerHTML = `<span style="color: #d32f2f;">Erro: ${result.error}</span>`;
-                }
-            } catch (error) {
-                messageDiv.innerHTML = '<span style="color: #d32f2f;">Erro na requisição.</span>';
-            }
-        });
-    });
-
-    // Helper for older browsers or if entries() fails
-    if (!Object.from_iterable) {
-        Object.from_iterable = (iterable) => {
-            const obj = {};
-            for (const [key, value] of iterable) {
-                obj[key] = value;
-            }
-            return obj;
-        };
-    }
-</script>
 {% endblock %}

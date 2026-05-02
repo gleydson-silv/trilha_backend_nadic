@@ -40,23 +40,91 @@
     }
   };
 
-  const forms = Array.from(document.querySelectorAll("form[data-endpoint]"));
-  if (!forms.length) return;
+  const loadCategories = async () => {
+    const select = document.getElementById("category-select");
+    if (!select) return;
+
+    try {
+      const response = await fetch("/categories/");
+      const result = await response.json();
+      if (result.success) {
+        select.innerHTML = '<option value="">Selecione uma categoria</option>';
+        result.data.results.forEach((cat) => {
+          const option = document.createElement("option");
+          option.value = cat.id;
+          option.textContent = cat.name;
+          select.appendChild(option);
+        });
+      }
+    } catch (error) {
+      select.innerHTML = '<option value="">Erro ao carregar categorias</option>';
+    }
+  };
+
+  const loadSalesReport = async () => {
+    const amountEl = document.getElementById("revenue-amount");
+    if (!amountEl) return;
+
+    const token = localStorage.getItem("access");
+    if (!token) return;
+
+    try {
+      const response = await fetch("/reports/revenue/", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+      if (data.success) {
+        const amount = data.data.total_revenue;
+        amountEl.textContent = `R$ ${parseFloat(amount).toLocaleString("pt-BR", {
+          minimumFractionDigits: 2,
+        })}`;
+        
+        // Se houver um container de histórico, podemos atualizar também
+        const historyContainer = document.querySelector(".profile__card .text-center");
+        if (historyContainer) {
+            historyContainer.textContent = "Relatório atualizado com sucesso.";
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao buscar faturamento:", error);
+    }
+  };
 
   const setResult = (form, message, isError = false) => {
-    const result = form.closest(".auth-neo__card")?.querySelector("[data-result]")
-      || form.querySelector("[data-result]")
-      || document.querySelector("[data-result]");
+    const result =
+      form.closest(".auth-neo__card")?.querySelector("[data-result]") ||
+      form.querySelector("[data-result]") ||
+      document.querySelector("[data-result]") ||
+      document.getElementById("form-message");
     if (!result) return;
     result.textContent = message || "";
     result.style.color = isError ? "#b42318" : "#0a4a2b";
+    
+    // Suporte para classes específicas de mensagem se existirem
+    if (isError) {
+        result.classList.add('auth-neo__message--error');
+        result.classList.remove('auth-neo__message--success');
+    } else {
+        result.classList.add('auth-neo__message--success');
+        result.classList.remove('auth-neo__message--error');
+    }
   };
 
   const collectFormData = (form) => {
     const data = {};
     new FormData(form).forEach((value, key) => {
       if (data[key] !== undefined) return;
-      data[key] = value;
+      
+      // Conversões automáticas para campos conhecidos
+      if (key === "price") {
+          data[key] = parseFloat(value) || 0;
+      } else if (key === "quantity_in_stock" || key === "category") {
+          data[key] = parseInt(value) || 0;
+      } else {
+          data[key] = value;
+      }
     });
 
     const userType = data.user_type;
@@ -71,68 +139,92 @@
     return data;
   };
 
-  setupCompleteProfileForm();
+  // Inicialização
+  document.addEventListener("DOMContentLoaded", () => {
+    setupCompleteProfileForm();
+    loadCategories();
+    loadSalesReport();
 
-  forms.forEach((form) => {
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
+    const forms = Array.from(document.querySelectorAll("form[data-endpoint]"));
+    forms.forEach((form) => {
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
 
-      const endpoint = form.getAttribute("data-endpoint") || form.getAttribute("action");
-      const method = (form.getAttribute("data-method") || form.getAttribute("method") || "POST").toUpperCase();
-      const redirectTo = form.getAttribute("data-redirect");
+        const endpoint =
+          form.getAttribute("data-endpoint") || form.getAttribute("action");
+        const method = (
+          form.getAttribute("data-method") ||
+          form.getAttribute("method") ||
+          "POST"
+        ).toUpperCase();
+        const redirectTo = form.getAttribute("data-redirect");
 
-      const csrfInput = form.querySelector('input[name="csrfmiddlewaretoken"]');
-      const csrfToken = csrfInput ? csrfInput.value : null;
+        const csrfInput = form.querySelector('input[name="csrfmiddlewaretoken"]');
+        const csrfToken = csrfInput ? csrfInput.value : null;
+        const accessToken = localStorage.getItem("access");
 
-      const headers = {
-        "Content-Type": "application/json",
-      };
-      if (csrfToken) headers["X-CSRFToken"] = csrfToken;
+        const headers = {
+          "Content-Type": "application/json",
+        };
+        if (csrfToken) headers["X-CSRFToken"] = csrfToken;
+        if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
 
-      const body = method === "GET" ? undefined : JSON.stringify(collectFormData(form));
+        const body =
+          method === "GET" ? undefined : JSON.stringify(collectFormData(form));
 
-      try {
-        const response = await fetch(endpoint, {
-          method,
-          headers,
-          body,
-          credentials: "same-origin",
-        });
+        setResult(form, "Processando...");
 
-        const payload = await response.json().catch(() => ({}));
+        try {
+          const response = await fetch(endpoint, {
+            method,
+            headers,
+            body,
+            credentials: "same-origin",
+          });
 
-        if (!response.ok || payload.success === false) {
-          const message = payload.error || payload.message || "Não foi possível concluir.";
-          setResult(form, message, true);
-          return;
-        }
+          const payload = await response.json().catch(() => ({}));
 
-        // Store tokens if present (Login/Register)
-        if (payload.data) {
-          if (payload.data.access) localStorage.setItem('access', payload.data.access);
-          if (payload.data.refresh) localStorage.setItem('refresh', payload.data.refresh);
-        }
-
-        if (redirectTo) {
-          let redirectTarget = redirectTo;
-          const roleField = form.querySelector('[name="role"]') || form.querySelector('[name="user_type"]');
-          const role = normalizeRole(roleField?.value);
-          if (role) {
-            const url = new URL(redirectTo, window.location.origin);
-            if (!url.searchParams.get("role")) {
-              url.searchParams.set("role", role);
-            }
-            redirectTarget = `${url.pathname}${url.search}${url.hash}`;
+          if (!response.ok || payload.success === false) {
+            const message =
+              payload.error || payload.message || "Não foi possível concluir.";
+            setResult(form, message, true);
+            return;
           }
-          window.location.assign(redirectTarget);
-          return;
-        }
 
-        const message = payload.message || "Concluído com sucesso.";
-        setResult(form, message, false);
-      } catch (err) {
-        setResult(form, "Erro de conexão. Tente novamente.", true);
-      }
+          // Store tokens if present (Login/Register)
+          if (payload.data) {
+            if (payload.data.access)
+              localStorage.setItem("access", payload.data.access);
+            if (payload.data.refresh)
+              localStorage.setItem("refresh", payload.data.refresh);
+          }
+
+          if (redirectTo) {
+            setResult(form, payload.message || "Sucesso! Redirecionando...");
+            setTimeout(() => {
+                let redirectTarget = redirectTo;
+                const roleField =
+                  form.querySelector('[name="role"]') ||
+                  form.querySelector('[name="user_type"]');
+                const role = normalizeRole(roleField?.value);
+                if (role) {
+                  const url = new URL(redirectTo, window.location.origin);
+                  if (!url.searchParams.get("role")) {
+                    url.searchParams.set("role", role);
+                  }
+                  redirectTarget = `${url.pathname}${url.search}${url.hash}`;
+                }
+                window.location.assign(redirectTarget);
+            }, 1500);
+            return;
+          }
+
+          const message = payload.message || "Concluído com sucesso.";
+          setResult(form, message, false);
+        } catch (err) {
+          setResult(form, "Erro de conexão. Tente novamente.", true);
+        }
+      });
     });
   });
 })();
