@@ -49,4 +49,7 @@ urlpatterns = [
     path('app/contact/', frontend_views.app_contact, name='app_contact'),
     path('app/deliveries/', frontend_views.app_deliveries, name='app_deliveries'),
     path('app/returns/', frontend_views.app_returns, name='app_returns'),
+    path('app/my-products/', frontend_views.app_my_products, name='app_my_products'),
+    path('app/sales-report/', frontend_views.app_sales_report, name='app_sales_report'),
+    path('app/products/create/', frontend_views.app_product_create, name='app_product_create'),
 ]
