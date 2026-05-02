@@ -1,51 +1,27 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Loja{% endblock %}
+{% block title %}Store Seller{% endblock %}
 
 {% block content %}
+<main>
   <section class="hero">
     <div class="container hero__inner">
       <div class="hero__content">
-        <p class="eyebrow">Painel do Vendedor</p>
-        <h1>Gerencie sua loja com elegância.</h1>
+        <p class="eyebrow">Nova Temporada</p>
+        <h1>Minimalismo sob medida para você.</h1>
         <p class="lead">
-          Acompanhe suas vendas, cadastre novos produtos e mantenha sua
-          presença digital sempre impecável.
+          Descubra uma curadoria exclusiva de peças que combinam design moderno com conforto absoluto.
         </p>
         <div class="hero__actions">
-          <a href="/app/products/create/" class="btn">Cadastrar Produto</a>
+          <a href="/app/my-products/" class="btn btn--primary">Ver Meus Produtos</a>
+          <a href="/app/products/create/" class="btn btn--ghost">Cadastrar Novo</a>
         </div>
       </div>
       <div class="hero__media">
         <div class="hero__image">
-          <img src="{% static 'users/images-removebg-preview.png' %}" alt="Camisa Oversized" class="hero__img-content">
+          <img src="{% static 'users/images-removebg-preview.png' %}" alt="Hero Image" class="hero__img-content">
         </div>
-        <div class="hero__card">
-          <strong>Camisa Oversized</strong>
-          <small>Algodão premium</small>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="container">
-      <div class="section__head">
-        <h2>Meus Produtos</h2>
-        <a href="/app/my-products/" class="link">Gerenciar todos</a>
-      </div>
-      <div class="grid">
-        {% for product in products %}
-        <article class="card">
-          <div class="card__image"></div>
-          <h3>{{ product.name }}</h3>
-          <p>{{ product.description }}</p>
-          <span class="price">R$ {{ product.price }}</span>
-        </article>
-        {% empty %}
-        <p class="muted">Nenhum produto cadastrado ainda.</p>
-        {% endfor %}
       </div>
     </div>
   </section>
@@ -70,23 +46,27 @@
   <section class="section section--muted">
     <div class="container">
       <div class="section__head">
-        <h2>Coleções</h2>
-        <p class="muted">Curadoria de peças essenciais para todos os dias.</p>
+        <h2>Categorias em Destaque</h2>
+        <p class="muted">Explore nossa curadoria dividida por estilo e necessidade.</p>
       </div>
       <div class="collection">
-        <div class="collection__card">
-          <h3>Essentials</h3>
-          <p>Minimalismo funcional</p>
-        </div>
-        <div class="collection__card">
-          <h3>Atelier</h3>
-          <p>Detalhes artesanais</p>
-        </div>
-        <div class="collection__card">
-          <h3>Studio</h3>
-          <p>Peças com textura</p>
-        </div>
+        <a href="#" class="collection__card">
+          <div class="collection__icon">👟</div>
+          <h3>Calçados</h3>
+          <p>Design e conforto diário</p>
+        </a>
+        <a href="#" class="collection__card">
+          <div class="collection__icon">👕</div>
+          <h3>Vestuário</h3>
+          <p>Essenciais atemporais</p>
+        </a>
+        <a href="#" class="collection__card">
+          <div class="collection__icon">⌚</div>
+          <h3>Acessórios</h3>
+          <p>O toque final da sua marca</p>
+        </a>
       </div>
     </div>
   </section>
+</main>
 {% endblock %}
