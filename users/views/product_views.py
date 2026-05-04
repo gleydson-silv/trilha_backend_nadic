@@ -125,3 +125,70 @@ def product_details_with_stock(request, product_id):
 
     serializer = ProductDetailSerializer(product)
     return ok_response(data=serializer.data)
+
+class CheckoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @transaction.atomic
+    def post(self, request):
+        serializer = CheckoutSerializer(data=request.data)
+        if not serializer.is_valid():
+            return error_response(
+                "Dados de checkout inválidos.", 
+                data=normalize_serializer_errors(serializer.errors),
+                status_code=status.HTTP_400_BAD_REQUEST
+            )
+
+        items_data = serializer.validated_data.get('items')
+        user = request.user
+        
+        # Garantir que temos um perfil de cliente
+        customer, _ = Customer.objects.get_or_create(user=user)
+
+        total_amount = Decimal('0.00')
+        order_items = []
+
+        for item in items_data:
+            product_id = item.get('product_id')
+            quantity = item.get('quantity')
+
+            try:
+                # Select for update para evitar concorrência no estoque
+                product = Product.objects.select_for_update().get(pk=product_id)
+            except Product.DoesNotExist:
+                return error_response(f"Produto ID {product_id} não encontrado.")
+
+            if product.quantity_in_stock < quantity:
+                return error_response(
+                    f"Estoque insuficiente para {product.name}. Disponível: {product.quantity_in_stock}"
+                )
+
+            # Atualiza o estoque (Ponto 2 do plano)
+            product.quantity_in_stock -= quantity
+            product.save()
+
+            unit_price = product.price
+            total_amount += unit_price * quantity
+
+            order_items.append(OrderItem(
+                product=product,
+                quantity=quantity,
+                unit_price=unit_price
+            ))
+
+        # Cria o pedido
+        order = Order.objects.create(
+            customer=customer,
+            total_amount=total_amount,
+            state='pending'
+        )
+
+        # Associa os itens ao pedido
+        for item in order_items:
+            item.order = order
+            item.save()
+
+        return ok_response(
+            message="Pedido realizado com sucesso!",
+            data={"order_id": order.id, "total": str(total_amount)}
+        )
