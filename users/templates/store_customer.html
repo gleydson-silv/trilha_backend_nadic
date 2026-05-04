@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Loja{% endblock %}
 
@@ -18,11 +19,8 @@
         </div>
       </div>
       <div class="hero__media">
-        <div class="hero__image"></div>
-        <div class="hero__card">
-          <span>Novo</span>
-          <strong>Bolsa Sienna</strong>
-          <small>Couro natural</small>
+        <div class="hero__image">
+          <img src="{% static 'users/images-removebg-preview.png' %}" alt="Hero Image" class="hero__img-content">
         </div>
       </div>
     </div>
@@ -37,10 +35,22 @@
       <div class="grid">
         {% for product in products %}
         <article class="card">
-          <div class="card__image"></div>
-          <h3>{{ product.name }}</h3>
-          <p>{{ product.description }}</p>
-          <span class="price">R$ {{ product.price }}</span>
+          <div class="card__image">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="card__img-fit">
+            {% else %}
+            <div class="flex-center w-full h-full muted" style="height: 100%; display: flex; align-items: center; justify-content: center;">📦</div>
+            {% endif %}
+          </div>
+          <div class="card__content">
+            <span class="eyebrow">{{ product.category.name }}</span>
+            <h3>{{ product.name }}</h3>
+            <p class="muted">{{ product.description|truncatechars:80 }}</p>
+            <div class="card__footer">
+              <span class="price">R$ {{ product.price }}</span>
+              <button class="btn btn--small btn--ghost">Adicionar</button>
+            </div>
+          </div>
         </article>
         {% empty %}
         <p class="muted">Nenhum produto cadastrado ainda.</p>
@@ -51,7 +61,9 @@
 
   <section class="editorial">
     <div class="container editorial__inner">
-      <div class="editorial__image"></div>
+      <div class="editorial__image">
+        <img src="{% static 'users/tenis.png' %}" alt="Editorial Flow" class="editorial__img">
+      </div>
       <div class="editorial__content">
         <p class="eyebrow">Manifesto</p>
         <h2>Design silencioso. Impacto real.</h2>
@@ -67,22 +79,25 @@
   <section class="section section--muted">
     <div class="container">
       <div class="section__head">
-        <h2>Coleções</h2>
-        <p class="muted">Curadoria de peças essenciais para todos os dias.</p>
+        <h2>Categorias em Destaque</h2>
+        <p class="muted">Explore nossa curadoria dividida por estilo e necessidade.</p>
       </div>
       <div class="collection">
-        <div class="collection__card">
-          <h3>Essentials</h3>
-          <p>Minimalismo funcional</p>
-        </div>
-        <div class="collection__card">
-          <h3>Atelier</h3>
-          <p>Detalhes artesanais</p>
-        </div>
-        <div class="collection__card">
-          <h3>Studio</h3>
-          <p>Peças com textura</p>
-        </div>
+        <a href="#" class="collection__card">
+          <div class="collection__icon">👟</div>
+          <h3>Calçados</h3>
+          <p>Design e conforto diário</p>
+        </a>
+        <a href="#" class="collection__card">
+          <div class="collection__icon">👕</div>
+          <h3>Vestuário</h3>
+          <p>Essenciais atemporais</p>
+        </a>
+        <a href="#" class="collection__card">
+          <div class="collection__icon">⌚</div>
+          <h3>Acessórios</h3>
+          <p>O toque final da sua marca</p>
+        </a>
       </div>
     </div>
   </section>
