@@ -356,10 +356,60 @@
       document.getElementById('cart-drawer')?.classList.remove('drawer--open');
     },
 
+    async checkout() {
+      if (this.items.length === 0) return;
+
+      const checkoutBtn = document.getElementById('checkout-btn');
+      if (checkoutBtn) {
+        checkoutBtn.disabled = true;
+        checkoutBtn.textContent = 'Processando...';
+      }
+
+      const payload = {
+        items: this.items.map(item => ({
+          product_id: parseInt(item.id),
+          quantity: item.quantity
+        })),
+        payment_method: 'pix'
+      };
+
+      try {
+        const response = await fetch('/api/checkout/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value,
+            'Authorization': `Bearer ${localStorage.getItem('access')}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert('Pedido realizado com sucesso! Seu estoque foi atualizado.');
+          this.items = [];
+          this.save();
+          this.closeDrawer();
+          window.location.href = '/app/store/';
+        } else {
+          alert('Erro ao finalizar: ' + (data.message || data.error || 'Tente novamente.'));
+        }
+      } catch (err) {
+        alert('Erro de conexão. Verifique sua internet.');
+      } finally {
+        if (checkoutBtn) {
+          checkoutBtn.disabled = false;
+          checkoutBtn.textContent = 'Finalizar Compra';
+        }
+      }
+    },
+
     bindEvents() {
       document.getElementById('open-cart')?.addEventListener('click', () => this.openDrawer());
       document.getElementById('close-cart')?.addEventListener('click', () => this.closeDrawer());
       document.getElementById('close-cart-overlay')?.addEventListener('click', () => this.closeDrawer());
+      document.getElementById('checkout-btn')?.addEventListener('click', () => this.checkout());
 
       document.addEventListener('click', (e) => {
         const btn = e.target.closest('[data-add-cart]');
@@ -376,6 +426,5 @@
     }
   };
 
-  // Tornar global para acesso via onclick
   window.cartManager = cartManager;
   cartManager.init();
