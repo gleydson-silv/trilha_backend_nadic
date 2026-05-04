@@ -97,8 +97,22 @@ def app_store(request):
             redirect_url = f"{redirect_url}?role={role}"
         return redirect(redirect_url)
     if user.role == User.Role.CUSTOMER:
-        products = Product.objects.all()
-        return render(request, "store_customer.html", {"products": products})
+        queryset = Product.objects.all().order_by("-created_at")
+        
+        category_id = request.GET.get("category")
+        search_query = request.GET.get("search")
+        
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+        if search_query:
+            queryset = queryset.filter(name__icontains=search_query)
+            
+        categories = Category.objects.all()
+            
+        return render(request, "store_customer.html", {
+            "products": queryset,
+            "categories": categories
+        })
     if user.role == User.Role.SELLER:
         # Vendedor vê apenas seus produtos na seção "Meus Produtos" da store
         products = Product.objects.filter(seller=user.seller_profile)
@@ -416,5 +430,19 @@ def app_product_delete_confirm(request, pk):
     
     _consume_pending_role(request, user)
     return render(request, "product_delete_confirm.html", {
+        "product": product
+    })
+
+
+@ensure_csrf_cookie
+def app_product_detail(request, pk):
+    user = request.user
+    if not user.is_authenticated:
+        return redirect("/app/login/")
+
+    product = get_object_or_404(Product, pk=pk)
+    
+    _consume_pending_role(request, user)
+    return render(request, "product_detail.html", {
         "product": product
     })
