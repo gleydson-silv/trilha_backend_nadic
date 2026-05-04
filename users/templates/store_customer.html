@@ -28,27 +28,44 @@
 
   <section class="section">
     <div class="container">
-      <div class="section__head">
-        <h2>Novidades</h2>
-        <a href="#" class="link">Ver tudo</a>
+      <div class="section__head section__head--filters">
+        <div>
+          <h2>Novidades</h2>
+          <p class="muted">Os últimos lançamentos do nosso Studio.</p>
+        </div>
+        
+        <form action="/app/store/" method="GET" class="search-form">
+          <input type="text" name="search" placeholder="Pesquisar produto..." value="{{ request.GET.search|default:'' }}">
+          <button type="submit">🔍</button>
+        </form>
       </div>
       <div class="grid">
         {% for product in products %}
         <article class="card">
-          <div class="card__image">
-            {% if product.image %}
-            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="card__img-fit">
-            {% else %}
-            <div class="flex-center w-full h-full muted" style="height: 100%; display: flex; align-items: center; justify-content: center;">📦</div>
-            {% endif %}
-          </div>
-          <div class="card__content">
-            <span class="eyebrow">{{ product.category.name }}</span>
-            <h3>{{ product.name }}</h3>
-            <p class="muted">{{ product.description|truncatechars:80 }}</p>
+          <a href="/app/product/{{ product.id }}/" class="card__link-wrapper">
+            <div class="card__image">
+              {% if product.image %}
+              <img src="{{ product.image.url }}" alt="{{ product.name }}" class="card__img-fit">
+              {% else %}
+              <div class="flex-center w-full h-full muted" style="height: 100%; display: flex; align-items: center; justify-content: center;">📦</div>
+              {% endif %}
+            </div>
+            <div class="card__content">
+              <span class="eyebrow">{{ product.category.name }}</span>
+              <h3>{{ product.name }}</h3>
+              <p class="muted">{{ product.description|truncatechars:80 }}</p>
+            </div>
+          </a>
+          <div class="card__content" style="padding-top: 0;">
             <div class="card__footer">
               <span class="price">R$ {{ product.price }}</span>
-              <button class="btn btn--small btn--ghost">Adicionar</button>
+              <button class="btn btn--small btn--ghost" 
+                data-add-cart="{{ product.id }}"
+                data-name="{{ product.name }}"
+                data-price="{{ product.price }}"
+                data-image="{% if product.image %}{{ product.image.url }}{% endif %}">
+                Adicionar
+              </button>
             </div>
           </div>
         </article>
@@ -83,21 +100,21 @@
         <p class="muted">Explore nossa curadoria dividida por estilo e necessidade.</p>
       </div>
       <div class="collection">
-        <a href="#" class="collection__card">
-          <div class="collection__icon">👟</div>
-          <h3>Calçados</h3>
-          <p>Design e conforto diário</p>
+        <a href="/app/store/" class="collection__card {% if not request.GET.category %}collection__card--active{% endif %}">
+          <div class="collection__icon">🎯</div>
+          <h3>Todos</h3>
+          <p>Ver catálogo completo</p>
         </a>
-        <a href="#" class="collection__card">
-          <div class="collection__icon">👕</div>
-          <h3>Vestuário</h3>
-          <p>Essenciais atemporais</p>
+        {% for category in categories %}
+        <a href="/app/store/?category={{ category.id }}" 
+           class="collection__card {% if request.GET.category == category.id|stringformat:'i' %}collection__card--active{% endif %}">
+          <div class="collection__icon">
+            {% if "Calçado" in category.name %}👟{% elif "Vestuário" in category.name %}👕{% elif "Acessório" in category.name %}⌚{% else %}📦{% endif %}
+          </div>
+          <h3>{{ category.name }}</h3>
+          <p>{{ category.description|truncatechars:30 }}</p>
         </a>
-        <a href="#" class="collection__card">
-          <div class="collection__icon">⌚</div>
-          <h3>Acessórios</h3>
-          <p>O toque final da sua marca</p>
-        </a>
+        {% endfor %}
       </div>
     </div>
   </section>
