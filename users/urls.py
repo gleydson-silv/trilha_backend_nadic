@@ -55,5 +55,5 @@ urlpatterns = [
     path('app/products/edit/<int:pk>/', frontend_views.app_product_edit, name='app_product_edit'),
     path('app/products/delete/<int:pk>/', frontend_views.app_product_delete_confirm, name='app_product_delete_confirm'),
     path('app/product/<int:pk>/', frontend_views.app_product_detail, name='app_product_detail'),
-    path('api/checkout/', product_views.CheckoutView.as_view(), name='api_checkout'),
+    path('api/checkout/', views.CheckoutView.as_view(), name='api_checkout'),
 ]
