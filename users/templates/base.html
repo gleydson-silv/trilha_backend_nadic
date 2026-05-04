@@ -40,7 +40,9 @@
             {% block header_actions %}
               <a class="btn btn--ghost" href="/app/profile/">Minha conta</a>
               {% if user.role == "customer" %}
-                <a class="btn" href="/app/cart/">Carrinho</a>
+                <button class="btn btn--cart" id="open-cart">
+                  🛒 Carrinho <span id="cart-count">0</span>
+                </button>
               {% endif %}
               <a class="btn btn--ghost" href="/app/logout/">Sair</a>
             {% endblock %}
@@ -51,6 +53,28 @@
       <main>
         {% block content %}{% endblock %}
       </main>
+
+      <!-- Cart Drawer -->
+      <div id="cart-drawer" class="drawer">
+        <div class="drawer__overlay" id="close-cart-overlay"></div>
+        <div class="drawer__content">
+          <div class="drawer__header">
+            <h2>Sua Sacola</h2>
+            <button class="btn--close" id="close-cart">✕</button>
+          </div>
+          <div id="cart-items" class="drawer__body">
+            <!-- Itens serão inseridos via JS -->
+            <p class="muted text-center py-40">Seu carrinho está vazio.</p>
+          </div>
+          <div class="drawer__footer">
+            <div class="drawer__total">
+              <span>Subtotal</span>
+              <strong id="cart-total">R$ 0,00</strong>
+            </div>
+            <button class="btn btn--full" id="checkout-btn">Finalizar Compra</button>
+          </div>
+        </div>
+      </div>
 
       <footer class="footer">
         <div class="container footer__inner">
