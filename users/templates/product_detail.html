@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<section class="product-page">
+    <div class="container">
+        <div class="product-page__grid">
+            <!-- Coluna da Imagem -->
+            <div class="product-page__media">
+                <div class="product-page__image-container">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-page__img">
+                    {% else %}
+                    <div class="product-page__placeholder flex-center">
+                        <span>📦 Sem imagem</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Coluna de Informações -->
+            <div class="product-page__info">
+                <div class="product-page__sticky">
+                    <nav class="breadcrumb">
+                        <a href="/app/store/">Loja</a> / 
+                        <span>{{ product.category.name }}</span>
+                    </nav>
+
+                    <h1 class="product-page__title">{{ product.name }}</h1>
+                    <p class="product-page__price">R$ {{ product.price }}</p>
+                    
+                    <div class="product-page__divider"></div>
+
+                    <div class="product-page__description">
+                        <h3>Descrição</h3>
+                        <p>{{ product.description }}</p>
+                    </div>
+
+                    <div class="product-page__meta">
+                        <div class="meta-item">
+                            <span class="muted">Disponibilidade</span>
+                            <p>{% if product.quantity_in_stock > 0 %}Em estoque ({{ product.quantity_in_stock }} unidades){% else %}Esgotado{% endif %}</p>
+                        </div>
+                        <div class="meta-item">
+                            <span class="muted">Vendedor</span>
+                            <p>{{ product.seller.company_name }}</p>
+                        </div>
+                    </div>
+
+                    <div class="product-page__actions">
+                        {% if product.quantity_in_stock > 0 %}
+                        <button class="btn btn--primary btn--full" id="add-to-cart" 
+                            data-add-cart="{{ product.id }}"
+                            data-name="{{ product.name }}"
+                            data-price="{{ product.price }}"
+                            data-image="{% if product.image %}{{ product.image.url }}{% endif %}">
+                            Adicionar ao Carrinho
+                        </button>
+                        {% else %}
+                        <button class="btn btn--disabled btn--full" disabled>Esgotado</button>
+                        {% endif %}
+                        
+                    </div>
+                    
+                    <div id="cart-message" class="auth-neo__message mt-16"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
