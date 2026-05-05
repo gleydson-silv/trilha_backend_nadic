@@ -126,8 +126,12 @@ def product_details_with_stock(request, product_id):
     serializer = ProductDetailSerializer(product)
     return ok_response(data=serializer.data)
 
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.authentication import SessionAuthentication
+
 class CheckoutView(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [SessionAuthentication, JWTAuthentication]
 
     @transaction.atomic
     def post(self, request):
