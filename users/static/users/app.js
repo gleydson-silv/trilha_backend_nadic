@@ -356,6 +356,21 @@
       document.getElementById('cart-drawer')?.classList.remove('drawer--open');
     },
 
+    getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    },
+
     async checkout() {
       if (this.items.length === 0) return;
 
@@ -378,10 +393,10 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value,
-            'Authorization': `Bearer ${localStorage.getItem('access')}`
+            'X-CSRFToken': this.getCookie('csrftoken')
           },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
+          credentials: 'same-origin'
         });
 
         const data = await response.json();
