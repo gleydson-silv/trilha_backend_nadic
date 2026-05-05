@@ -196,6 +196,8 @@ def app_profile_details(request):
     role = user.role
 
     payload = {
+        "first_name": user.first_name,
+        "last_name": user.last_name,
         "name": f"{user.first_name} {user.last_name}".strip(),
         "email": user.email,
         "role": role,

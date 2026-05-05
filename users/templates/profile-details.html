@@ -1,65 +1,76 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}Detalhes do perfil{% endblock %}
+{% block title %}Editar Perfil{% endblock %}
 
 {% block content %}
 <section class="profile-details">
   <div class="container">
     <div class="profile-details__header">
-      <a class="link" href="/app/profile/">Voltar</a>
-      <h1>Detalhes do perfil</h1>
-      <p class="muted">Aqui estao todas as informacões cadastradas.</p>
+      <a class="link" href="/app/profile/">← Voltar</a>
+      <h1>Configurações da Conta</h1>
+      <p class="muted">Mantenha suas informações de contato e identificação atualizadas.</p>
     </div>
 
-    <div class="profile-details__grid">
-      <div class="profile-details__card">
-        <h3>Identificação</h3>
-        <div class="profile-details__row">
-          <span>Nome</span>
-          <strong>{{ profile.name|default:"-" }}</strong>
-        </div>
-        <div class="profile-details__row">
-          <span>Email</span>
-          <strong>{{ profile.email|default:"-" }}</strong>
-        </div>
-        <div class="profile-details__row">
-          <span>Perfil</span>
-          <strong>
-            {% if profile.role == "customer" %}
-              Cliente
-            {% elif profile.role == "seller" %}
-              Vendedor
-            {% else %}
-              {{ profile.role|default:"-" }}
-            {% endif %}
-          </strong>
-        </div>
-        {% if profile.cpf %}
-        <div class="profile-details__row">
-          <span>CPF</span>
-          <strong>{{ profile.cpf }}</strong>
-        </div>
-        {% endif %}
-      </div>
+    <form class="auth-neo__form" data-endpoint="/profile/update/" data-method="PUT" data-redirect="/app/profile/">
+      {% csrf_token %}
+      
+      <div class="profile-details__grid">
+        <!-- Coluna: Identificação -->
+        <div class="profile-details__card">
+          <h3>Identificação</h3>
+          
+          <div class="auth-neo__field">
+            <label for="first_name">Nome</label>
+            <input type="text" id="first_name" name="first_name" value="{{ profile.name|default:''|truncatechars:20 }}" placeholder="Seu nome" required>
+          </div>
 
-      <div class="profile-details__card">
-        <h3>Contato</h3>
-        <div class="profile-details__row">
-          <span>Telefone</span>
-          <strong>{{ profile.phone_number|default:"-" }}</strong>
+          <div class="auth-neo__field">
+            <label for="last_name">Sobrenome</label>
+            <input type="text" id="last_name" name="last_name" value="{{ profile.last_name|default:'' }}" placeholder="Seu sobrenome" required>
+          </div>
+
+          <div class="auth-neo__field">
+            <label for="email">E-mail</label>
+            <input type="email" id="email" name="email" value="{{ profile.email|default:'' }}" placeholder="seu@email.com" required>
+          </div>
+
+          {% if profile.role == "customer" %}
+          <div class="auth-neo__field">
+            <label for="cpf">CPF</label>
+            <input type="text" id="cpf" name="cpf" value="{{ profile.cpf|default:'' }}" placeholder="000.000.000-00">
+          </div>
+          {% endif %}
         </div>
-        {% if profile.company_name %}
-        <div class="profile-details__row">
-          <span>Razao social</span>
-          <strong>{{ profile.company_name }}</strong>
+
+        <!-- Coluna: Contato e Empresa -->
+        <div class="profile-details__card">
+          <h3>Contato</h3>
+          
+          <div class="auth-neo__field">
+            <label for="phone_number">Telefone</label>
+            <input type="text" id="phone_number" name="phone_number" value="{{ profile.phone_number|default:'' }}" placeholder="(00) 00000-0000">
+          </div>
+
+          {% if profile.role == "seller" %}
+          <div class="auth-neo__field">
+            <label for="company_name">Razão Social</label>
+            <input type="text" id="company_name" name="company_name" value="{{ profile.company_name|default:'' }}" placeholder="Nome da sua empresa">
+          </div>
+
+          <div class="auth-neo__field">
+            <label for="cnpj">CNPJ</label>
+            <input type="text" id="cnpj" name="cnpj" value="{{ profile.cnpj|default:'' }}" placeholder="00.000.000/0000-00">
+          </div>
+          {% endif %}
+          
+          <div class="profile-details__actions mt-32">
+            <button type="submit" class="btn btn--primary btn--full">Salvar Alterações</button>
+            <div id="form-result" class="auth-neo__message mt-16"></div>
+          </div>
         </div>
-        <div class="profile-details__row">
-          <span>CNPJ</span>
-          <strong>{{ profile.cnpj }}</strong>
-        </div>
-        {% endif %}
       </div>
-    </div>
+    </form>
   </div>
 </section>
 {% endblock %}
