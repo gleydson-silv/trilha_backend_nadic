@@ -46,7 +46,7 @@ O **FlowCRM** é uma plataforma de marketplace de luxo projetada para oferecer u
 
 1. **Clonar o Repositório**:
    ```bash
-   git clone https://github.com/seu-usuario/trilha_backend_nadic.git
+   git clone https://github.com/gleydson-silv/trilha_backend_nadic.git
    cd trilha_backend_nadic
    ```
 
