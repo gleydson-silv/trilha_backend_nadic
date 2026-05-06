@@ -11,9 +11,14 @@ O **FlowCRM** é uma plataforma de marketplace de luxo projetada para oferecer u
 
 ## ✨ Principais Funcionalidades
 
+### 🔐 Autenticação & Segurança de Ponta
+- **Sistema Híbrido de Autenticação**: O projeto utiliza **JWT (JSON Web Token)** para comunicações seguras e *stateless* com a API, garantindo que as requisições sejam rápidas e protegidas.
+- **Login Social (Google)**: Integração completa com Google via `django-allauth`. O sistema é inteligente o suficiente para identificar o papel (Vendedor/Cliente) escolhido pelo usuário mesmo durante o fluxo de autenticação externa.
+- **2FA (Autenticação em Duas Etapas)**: Camada extra de segurança via TOTP (Google Authenticator), protegendo contas de vendedores e clientes contra acessos não autorizados.
+- **Gestão de Sessão**: Armazenamento seguro de tokens no `localStorage` com renovação automática e suporte a `SessionAuthentication` para navegação fluida nos templates Django.
+
 ### 👤 Gestão de Perfis Híbridos
 - **Dual-Role Engine**: Sistema de papéis dinâmicos (Vendedor vs. Cliente) com fluxos de cadastro e completude de perfil personalizados.
-- **Segurança Avançada**: Autenticação via JWT e Suporte a **2FA (Autenticação em Duas Etapas)**.
 - **Central de Conta**: Edição de dados em tempo real com validações rigorosas de CPF/CNPJ e endereços via integração com CEP.
 
 ### 🏪 Experiência do Cliente (Storefront)
@@ -35,7 +40,8 @@ O **FlowCRM** é uma plataforma de marketplace de luxo projetada para oferecer u
 ## 🛠️ Stack Tecnológica
 
 - **Backend**: Python 3.12 + Django 6.0
-- **API**: Django REST Framework + SimpleJWT (Tokens)
+- **API**: Django REST Framework + **SimpleJWT** (Tokens)
+- **Autenticação**: **django-allauth** (Google Social Login)
 - **Database**: SQLite (Desenvolvimento) / PostgreSQL (Recomendado para Produção)
 - **Frontend**: HTML5, Vanilla CSS (Design System Studio), JavaScript (AJAX/Fetch API)
 - **Imagens**: Pillow (Processamento de arquivos estáticos e mídia)
