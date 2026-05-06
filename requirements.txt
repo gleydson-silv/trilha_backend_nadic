@@ -8,3 +8,4 @@ pyotp
 django-allauth
 requests
 cryptography
+Pillow
