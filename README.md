@@ -82,6 +82,29 @@ O **FlowCRM** é uma plataforma de marketplace de luxo projetada para oferecer u
 
 ---
 
+## 🐳 Executando com Docker
+
+Se você prefere usar Docker para um ambiente isolado com PostgreSQL:
+
+1. **Subir os containers**:
+   ```bash
+   docker-compose up --build -d
+   ```
+
+2. **Aplicar migrações**:
+   ```bash
+   docker-compose exec web python manage.py migrate
+   ```
+
+3. **Criar superusuário**:
+   ```bash
+   docker-compose exec web python manage.py createsuperuser
+   ```
+
+4. **Acesse**: `http://127.0.0.1:8000/app/store/`
+
+---
+
 ## 🎨 Filosofia de Design
 
 O projeto segue a estética **"Studio"**:
