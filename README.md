@@ -4,6 +4,7 @@
 [![DRF](https://img.shields.io/badge/DRF-REST_Framework-red?style=for-the-badge&logo=django)](https://www.django-rest-framework.org/)
 [![JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-yellow?style=for-the-badge&logo=javascript)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![CSS3](https://img.shields.io/badge/CSS3-Studio_Style-blue?style=for-the-badge&logo=css3)](https://developer.mozilla.org/en-US/docs/Web/CSS)
+[![Swagger](https://img.shields.io/badge/Swagger-OpenAPI-brightgreen?style=for-the-badge&logo=swagger)](http://127.0.0.1:8000/swagger/)
 
 O **FlowCRM** é uma plataforma de marketplace de luxo projetada para oferecer uma experiência de compra minimalista e uma gestão de vendas simplificada. Combinando o poder do **Django REST Framework** no backend com uma interface **Neo-Minimalista** no frontend, o projeto redefine a interação entre vendedores e clientes.
 
@@ -45,6 +46,7 @@ O **FlowCRM** é uma plataforma de marketplace de luxo projetada para oferecer u
 - **Database**: SQLite (Desenvolvimento) / PostgreSQL (Recomendado para Produção)
 - **Frontend**: HTML5, Vanilla CSS (Design System Studio), JavaScript (AJAX/Fetch API)
 - **Imagens**: Pillow (Processamento de arquivos estáticos e mídia)
+- **Documentação de API**: **drf-spectacular** (OpenAPI 3.0 / Swagger UI)
 
 ---
 
@@ -79,6 +81,57 @@ O **FlowCRM** é uma plataforma de marketplace de luxo projetada para oferecer u
    ```
 
 6. **Acesse**: `http://127.0.0.1:8000/app/store/`
+
+---
+
+## 📖 Documentação da API (Swagger UI)
+
+O **FlowCRM** utiliza **drf-spectacular** para gerar automaticamente a documentação da API no formato **OpenAPI 3.0**, disponibilizando uma interface interativa via **Swagger UI**.
+
+### Endpoints disponíveis
+
+| Rota | Descrição |
+|------|-----------|
+| `/api/schema/` | Esquema OpenAPI 3.0 completo (JSON/YAML) |
+| `/swagger/` | Interface interativa Swagger UI |
+
+### Como acessar
+
+1. Inicie o servidor de desenvolvimento:
+   ```bash
+   python manage.py runserver
+   ```
+
+2. Acesse a interface Swagger:
+   ```
+   http://127.0.0.1:8000/swagger/
+   ```
+
+### Funcionalidades
+
+- **Documentação automática**: Todos os endpoints da API REST são documentados automaticamente a partir dos serializers e viewsets do DRF.
+- **Teste interativo**: É possível testar cada endpoint diretamente pela interface Swagger, enviando requisições com autenticação JWT.
+- **Esquema exportável**: O schema pode ser exportado para ferramentas como Postman, Insomnia ou qualquer cliente compatível com OpenAPI 3.0.
+- **Autenticação integrada**: O Swagger UI suporta autenticação via Bearer Token (JWT), permitindo testar endpoints protegidos diretamente na interface.
+
+### Configuração
+
+A configuração do drf-spectacular está em `core/settings.py`:
+
+```python
+SPECTACULAR_SETTINGS = {
+    "TITLE": "API - CRM",
+    "DESCRIPTION": "API de CRM com autenticação JWT",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+}
+```
+
+A classe de schema padrão está definida no `REST_FRAMEWORK`:
+
+```python
+"DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+```
 
 ---
 
