@@ -14,7 +14,7 @@ services:
 
   web:
     build: .
-    command: python manage.py runserver 0.0.0.0:8000
+    command: sh -c "python manage.py migrate && gunicorn core.wsgi:application --bind 0.0.0.0:8000"
     volumes:
       - .:/app
       - static_volume:/app/static
@@ -22,7 +22,9 @@ services:
     ports:
       - "8000:8000"
     environment:
+      - SECRET_KEY=change-me-in-production
       - DEBUG=1
+      - ALLOWED_HOSTS=localhost,127.0.0.1
       - DB_NAME=flowcrm
       - DB_USER=postgres
       - DB_PASSWORD=postgres

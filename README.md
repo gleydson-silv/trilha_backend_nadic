@@ -146,15 +146,14 @@ A classe de schema padrão está definida no `REST_FRAMEWORK`:
 
 Se você prefere usar Docker para um ambiente isolado com PostgreSQL:
 
-1. **Subir os containers**:
+1. **Configurar variáveis** (copie `.env.example` para `.env` e ajuste `SECRET_KEY`).
+
+2. **Subir os containers** (migrações rodam automaticamente; servidor via Gunicorn):
    ```bash
    docker-compose up --build -d
    ```
 
-2. **Aplicar migrações**:
-   ```bash
-   docker-compose exec web python manage.py migrate
-   ```
+> Em bancos SQLite antigos criados antes das migrations versionadas, apague `db.sqlite3` e rode `python manage.py migrate` novamente.
 
 3. **Criar superusuário**:
    ```bash
