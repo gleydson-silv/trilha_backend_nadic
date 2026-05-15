@@ -28,7 +28,6 @@ urlpatterns = [
     path('', include(router.urls)),
     path('products/<int:product_id>/details/', views.product_details_with_stock, name='product_details_with_stock'),
     path('reports/revenue/', views.CompanyRevenueView.as_view(), name='company_revenue'),
-    path('checkout/', views.checkout, name='checkout'),
     path('app/register/',frontend_views.app_register, name='app_register'),
     path('app/login/',frontend_views.app_login, name='app_login'),
     path('app/logout/', frontend_views.app_logout, name='app_logout'),
