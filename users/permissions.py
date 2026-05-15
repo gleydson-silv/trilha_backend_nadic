@@ -8,6 +8,8 @@ class IsSeller(BasePermission):
 
 
 class ProductAccessPermission(BasePermission):
+    """Leitura e escrita exigem usuário autenticado; POST apenas para vendedores."""
+
     def has_permission(self, request, view):
         if not request.user.is_authenticated:
             return False
