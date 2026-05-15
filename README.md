@@ -68,7 +68,7 @@ O **FlowCRM** é uma plataforma de marketplace de luxo projetada para oferecer u
    pip install -r requirements.txt
    ```
 
-4. **Executar Migrações**:
+4. **Executar Migrações** (schema versionado em `users/migrations/`):
    ```bash
    python manage.py migrate
    ```

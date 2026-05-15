@@ -29,9 +29,8 @@ media/
 staticfiles/
 .local/
 
-# Django Migrations (se quiser versionar, remova a linha abaixo)
+# Django Migrations
 */migrations/__pycache__/
-*/migrations/*.py
 
 # ==========================================
 # IDEs e editores
