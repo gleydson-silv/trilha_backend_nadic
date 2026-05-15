@@ -134,6 +134,7 @@ class Payment(models.Model):
     ], default='credit_card')
 
 
+class Address(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='addresses')
     street = models.CharField(max_length=255,null=False, blank=False)
     number = models.CharField(max_length=10,default="s/n")
