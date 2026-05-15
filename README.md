@@ -70,17 +70,22 @@ O **FlowCRM** é uma plataforma de marketplace de luxo projetada para oferecer u
    pip install -r requirements.txt
    ```
 
-4. **Executar Migrações** (schema versionado em `users/migrations/`):
+4. **Variáveis de ambiente** (opcional em dev; copie `.env.example` para `.env`):
+   ```bash
+   # SECRET_KEY, DEBUG, ALLOWED_HOSTS
+   ```
+
+5. **Executar Migrações** (schema versionado em `users/migrations/`):
    ```bash
    python manage.py migrate
    ```
 
-5. **Iniciar o Servidor**:
+6. **Iniciar o Servidor**:
    ```bash
    python manage.py runserver
    ```
 
-6. **Acesse**: `http://127.0.0.1:8000/app/store/`
+7. **Acesse**: `http://127.0.0.1:8000/app/store/`
 
 ---
 
