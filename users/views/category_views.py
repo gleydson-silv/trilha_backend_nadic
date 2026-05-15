@@ -1,44 +1,13 @@
-from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from ..serializers import (
-    RegisterSerializer,
-    LoginSerializer,
-    ProfileCompletionSerializer,
-    ProductSerializer,
-    ProductDetailSerializer,
-    CategorySerializer,
-    normalize_serializer_errors,
-    CheckoutSerializer,
-    OrderSerializer,
-)
-from django.db import transaction
-from rest_framework import viewsets
-from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
 from django_ratelimit.decorators import ratelimit
-from django.contrib.auth import authenticate, login as django_login
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import status, viewsets
 from rest_framework.pagination import PageNumberPagination
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from ..models import User, Product, OrderItem, Category, Seller, Customer, Order, Payment
-from django.db.models import Sum, F, DecimalField, ExpressionWrapper
-from decimal import Decimal, InvalidOperation
-from ..permissions import IsSeller, ProductAccessPermission, CategoryAccessPermission
-from django.core.mail import send_mail
-from django.conf import settings
-from django.utils.http import urlsafe_base64_encode
-from django.utils.http import urlsafe_base64_decode
-from django.utils.encoding import force_bytes
-from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import ValidationError as DjangoValidationError
-import requests
-from ..models import Address
-import pyotp
-from ..validators import format_phone, format_cpf, format_cnpj, validate_cep
-from .utils import ok_response, error_response, _is_seller, _seller_payload, _customer_payload
+
+from ..models import Category
+from ..permissions import CategoryAccessPermission
+from ..serializers import CategorySerializer, normalize_serializer_errors
+from .utils import error_response, ok_response
+
 
 class CategoryPagination(PageNumberPagination):
     page_size = 10
@@ -70,7 +39,10 @@ class CategoryViewSet(viewsets.ModelViewSet):
         if serializer.is_valid():
             self.perform_create(serializer)
             return ok_response(data=serializer.data, status_code=status.HTTP_201_CREATED)
-        return error_response("Dados inválidos.", details=normalize_serializer_errors(serializer.errors))
+        return error_response(
+            "Dados inválidos.",
+            details=normalize_serializer_errors(serializer.errors),
+        )
 
     @method_decorator(ratelimit(key="user", rate="60/m", method="GET"))
     def retrieve(self, request, *args, **kwargs):
@@ -91,7 +63,10 @@ class CategoryViewSet(viewsets.ModelViewSet):
         if serializer.is_valid():
             self.perform_update(serializer)
             return ok_response(data=serializer.data)
-        return error_response("Dados inválidos.", details=normalize_serializer_errors(serializer.errors))
+        return error_response(
+            "Dados inválidos.",
+            details=normalize_serializer_errors(serializer.errors),
+        )
 
     @method_decorator(ratelimit(key="user", rate="10/m", method="PATCH"))
     def partial_update(self, request, *args, **kwargs):
