@@ -329,15 +329,6 @@ def app_contact(request):
     return render(request, "contact.html")
 
 @ensure_csrf_cookie
-def app_faq(request):
-    user = request.user
-    if not user.is_authenticated:
-        return redirect("/app/login/")
-
-    _consume_pending_role(request, user)
-    return render(request, "faq.html")
-
-@ensure_csrf_cookie
 def app_support(request):
     user = request.user
     if not user.is_authenticated:

@@ -134,14 +134,6 @@ class Payment(models.Model):
     ], default='credit_card')
 
 
-class FinancialReport(models.Model):
-    report_date = models.DateTimeField(auto_now_add=True)
-    total_revenue = models.DecimalField(max_digits=15, decimal_places=2)
-    total_expenses = models.DecimalField(max_digits=15, decimal_places=2)
-    net_profit = models.DecimalField(max_digits=15, decimal_places=2)
-
-
-class Address(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='addresses')
     street = models.CharField(max_length=255,null=False, blank=False)
     number = models.CharField(max_length=10,default="s/n")
