@@ -87,6 +87,8 @@ O **FlowCRM** é uma plataforma de marketplace de luxo projetada para oferecer u
 
 7. **Acesse**: `http://127.0.0.1:8000/app/store/`
 
+> A API de catálogo (`GET /products/`) exige usuário autenticado, alinhada à vitrine em `/app/store/`.
+
 ---
 
 ## 📖 Documentação da API (Swagger UI)
